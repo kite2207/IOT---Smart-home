@@ -1,10 +1,24 @@
 #include <Arduino.h>
 
+#include "config.h"
+#include "display.h"
+#include "led.h"
+#include "mqtt_manager.h"
+#include "wifi_manager.h"
+
 void setup() {
     Serial.begin(115200);
-    Serial.println("SafeHome Start!");
+    delay(500);
+
+    setupDisplay();
+    setupLed();
+
+    setupWifi();
+    setupMqtt();
 }
 
 void loop() {
-    delay(1000);
+    keepWifiConnected();
+    mqttLoop();
+    delay(10);
 }
