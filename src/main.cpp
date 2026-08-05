@@ -1,19 +1,47 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+const char* mqtt_server = "broker.hivemq.com";
+const char* mqtt_topic = "safehome/frontdoor/ultrasonic";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+const int trigPin = 5;
+const int echoPin = 18;
+
+void setup_wifi()
+{
+  delay(10);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+  }
+}
+
+void reconnect()
+{
+  while (!client.connected()) {
+    if (client.connect("ESP32_SafeHome_Client")) {
+      // Thành công
+    }
+    else
+    {
+      delay(5000);
+    }
+  }
+}
 
 void setup() {
     Serial.begin(115200);
-    delay(2000);
-    Serial.flush();
-    Serial.println("UART 115200 OK");
     Serial.println("SafeHome Start!");
-    Serial.println("Waiting for data...");
 }
 
 void loop() {
-    static unsigned long lastPrint = 0;
-
-    if (millis() - lastPrint >= 1000) {
-        lastPrint = millis();
-        Serial.println("System running...");
-    }
+    delay(1000);
 }
