@@ -21,5 +21,9 @@ constexpr uint16_t MQTT_PORT = 8883;
 const char* const MQTT_USER = "KoKoNut";
 const char* const MQTT_PASSWORD = "kkn!@#1236";
 
+// LED
 const char* const LED_COMMAND = "safehome/led/set";
 const char* const LED_STATE = "safehome/led/state";
+
+// LCD
+const char* const LCD_COMMAND = "safehome/lcd/display";
