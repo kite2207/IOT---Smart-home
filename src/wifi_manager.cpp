@@ -6,7 +6,7 @@
 #include "display.h"
 
 void setupWifi() {
-    printDisplayLine(0,"\n[WIFI] Dang ket noi toi ");
+    Serial.print("\n[WIFI] Dang ket noi toi ");
     Serial.println(WIFI_SSID);
 
     WiFi.mode(WIFI_STA);
@@ -17,7 +17,7 @@ void setupWifi() {
         Serial.print(".");
     }
 
-   printDisplayLine(0,"\n[WIFI] Da ket noi thanh cong!");
+    Serial.print("\n[WIFI] Da ket noi thanh cong!");
     Serial.print("[WIFI] Dia chi IP: ");
     Serial.println(WiFi.localIP());
 }

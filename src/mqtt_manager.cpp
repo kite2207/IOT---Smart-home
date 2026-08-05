@@ -28,9 +28,9 @@ namespace {
         // Ví dụ: Nhận lệnh bật/tắt LED
         if (strcmp(topic, "safehome/led/set") == 0) {
             if (message == "ON") {
-                printDisplayLine(0,"ON");
+                Serial.print("ON");
             } else if (message == "OFF") {
-                printDisplayLine(0, "OFF");
+                Serial.print("OFF");
             }
         }
     }
