@@ -4,6 +4,7 @@
 #include "display.h"
 #include "led.h"
 #include "mqtt_manager.h"
+#include "rfid.h"
 #include "wifi_manager.h"
 
 void setup() {
@@ -15,10 +16,12 @@ void setup() {
 
     setupWifi();
     setupMqtt();
+    setupRfid();
 }
 
 void loop() {
     keepWifiConnected();
     mqttLoop();
+    rfidLoop();
     delay(10);
 }

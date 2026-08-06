@@ -8,6 +8,13 @@ constexpr uint8_t LCD_I2C_ADDRESS = 0x27;
 constexpr uint8_t LCD_COLUMNS = 16;
 constexpr uint8_t LCD_ROWS = 2;
 
+// RFID MFRC522
+constexpr uint8_t RFID_SS_PIN = 5;
+constexpr uint8_t RFID_RST_PIN = 25;
+constexpr uint8_t RFID_SCK_PIN = 18;
+constexpr uint8_t RFID_MISO_PIN = 19;
+constexpr uint8_t RFID_MOSI_PIN = 23;
+
 // Optional serial diagnostics
 constexpr bool DEBUG_SERIAL = false;
 
@@ -27,3 +34,6 @@ const char* const LED_STATE = "safehome/led/state";
 
 // LCD
 const char* const LCD_COMMAND = "safehome/lcd/display";
+
+// RFID
+const char* const RFID_SCAN_TOPIC = "safehome/rfid/scan";

@@ -37,6 +37,13 @@
         "pins": "i2c",
         "address": "0x27"
       }
+    },
+    {
+      "type": "board-mfrc522",
+      "id": "rfid1",
+      "top": 20,
+      "left": 430,
+      "attrs": {}
     }
   ],
   "connections": [
@@ -46,6 +53,13 @@
     [ "lcd1:SDA", "esp:D21", "blue", [] ],
     [ "lcd1:SCL", "esp:D22", "blue", [] ],
     [ "lcd1:VCC", "esp:VIN", "red", [] ],
-    [ "lcd1:GND", "esp:GND.2", "black", [] ]
+    [ "lcd1:GND", "esp:GND.2", "black", [] ],
+    [ "rfid1:SDA", "esp:D5", "green", [] ],
+    [ "rfid1:SCK", "esp:D18", "green", [] ],
+    [ "rfid1:MOSI", "esp:D23", "green", [] ],
+    [ "rfid1:MISO", "esp:D19", "green", [] ],
+    [ "rfid1:RST", "esp:D25", "green", [] ],
+    [ "rfid1:3.3V", "esp:3V3", "red", [] ],
+    [ "rfid1:GND", "esp:GND.3", "black", [] ]
   ]
 }
