@@ -37,6 +37,15 @@
         "pins": "i2c",
         "address": "0x27"
       }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1",
+      "top": -150,
+      "left": 100,
+      "attrs": {
+        "distance": "50"
+      }
     }
   ],
   "connections": [
@@ -46,6 +55,10 @@
     [ "lcd1:SDA", "esp:D21", "blue", [] ],
     [ "lcd1:SCL", "esp:D22", "blue", [] ],
     [ "lcd1:VCC", "esp:VIN", "red", [] ],
-    [ "lcd1:GND", "esp:GND.2", "black", [] ]
+    [ "lcd1:GND", "esp:GND.2", "black", [] ],
+    [ "ultrasonic1:VCC", "esp:VIN", "red", [ "v0" ] ],
+    [ "ultrasonic1:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "ultrasonic1:TRIG", "esp:D26", "green", [ "v0" ] ],
+    [ "ultrasonic1:ECHO", "esp:D27", "blue", [ "v0" ] ]
   ]
 }
