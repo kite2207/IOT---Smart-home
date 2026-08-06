@@ -9,7 +9,56 @@
       "top": 0,
       "left": 0,
       "attrs": {}
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -20,
+      "left": 250,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 20,
+      "left": 250,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd1",
+      "top": 180,
+      "left": 180,
+      "attrs": {
+        "pins": "i2c",
+        "address": "0x27"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "ultrasonic1",
+      "top": -150,
+      "left": 100,
+      "attrs": {
+        "distance": "50"
+      }
     }
   ],
-  "connections": []
+  "connections": [
+    [ "esp:D2", "r1:1", "green", [] ],
+    [ "r1:2", "led1:A", "green", [] ],
+    [ "led1:C", "esp:GND.1", "black", [] ],
+    [ "lcd1:SDA", "esp:D21", "blue", [] ],
+    [ "lcd1:SCL", "esp:D22", "blue", [] ],
+    [ "lcd1:VCC", "esp:VIN", "red", [] ],
+    [ "lcd1:GND", "esp:GND.2", "black", [] ],
+    [ "ultrasonic1:VCC", "esp:VIN", "red", [ "v0" ] ],
+    [ "ultrasonic1:GND", "esp:GND.1", "black", [ "v0" ] ],
+    [ "ultrasonic1:TRIG", "esp:D26", "green", [ "v0" ] ],
+    [ "ultrasonic1:ECHO", "esp:D27", "blue", [ "v0" ] ]
+  ]
 }
