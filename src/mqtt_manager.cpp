@@ -70,3 +70,9 @@ void mqttLoop() {
     }
     mqttClient.loop();
 }
+
+void publishMessage(const char* topic, const char* payload) {
+    if (mqttClient.connected()) {
+        mqttClient.publish(topic, payload);
+    }
+}
