@@ -4,7 +4,6 @@
 #include "display.h"
 #include "led.h"
 #include "mqtt_manager.h"
-#include "servo_ctrl.h"
 #include "wifi_manager.h"
 
 void setup() {
@@ -13,7 +12,6 @@ void setup() {
 
     setupDisplay();
     setupLed();
-    setupServo();    // Khởi tạo servo + tạo FreeRTOS task
 
     setupWifi();
     setupMqtt();
