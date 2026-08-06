@@ -8,6 +8,17 @@ constexpr uint8_t LCD_I2C_ADDRESS = 0x27;
 constexpr uint8_t LCD_COLUMNS = 16;
 constexpr uint8_t LCD_ROWS = 2;
 
+// RFID MFRC522
+constexpr uint8_t RFID_SS_PIN = 5;
+constexpr uint8_t RFID_RST_PIN = 25;
+constexpr uint8_t RFID_SCK_PIN = 18;
+constexpr uint8_t RFID_MISO_PIN = 19;
+constexpr uint8_t RFID_MOSI_PIN = 23;
+
+// Ultrasonic
+constexpr uint8_t ultrasonic_trigPin = 26;
+constexpr uint8_t ultrasonic_echoPin = 27;
+
 // Optional serial diagnostics
 constexpr bool DEBUG_SERIAL = false;
 
@@ -21,5 +32,12 @@ constexpr uint16_t MQTT_PORT = 8883;
 const char* const MQTT_USER = "KoKoNut";
 const char* const MQTT_PASSWORD = "kkn!@#1236";
 
+// LED
 const char* const LED_COMMAND = "safehome/led/set";
 const char* const LED_STATE = "safehome/led/state";
+
+// LCD
+const char* const LCD_COMMAND = "safehome/lcd/display";
+
+// RFID
+const char* const RFID_SCAN_TOPIC = "safehome/rfid/scan";

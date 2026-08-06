@@ -46,6 +46,13 @@
       "attrs": {
         "distance": "50"
       }
+    },
+    {
+      "type": "board-mfrc522",
+      "id": "rfid1",
+      "top": 20,
+      "left": 430,
+      "attrs": {}
     }
   ],
   "connections": [
@@ -59,6 +66,13 @@
     [ "ultrasonic1:VCC", "esp:VIN", "red", [ "v0" ] ],
     [ "ultrasonic1:GND", "esp:GND.1", "black", [ "v0" ] ],
     [ "ultrasonic1:TRIG", "esp:D26", "green", [ "v0" ] ],
-    [ "ultrasonic1:ECHO", "esp:D27", "blue", [ "v0" ] ]
+    [ "ultrasonic1:ECHO", "esp:D27", "blue", [ "v0" ] ],
+    [ "rfid1:SDA", "esp:D5", "green", [] ],
+    [ "rfid1:SCK", "esp:D18", "green", [] ],
+    [ "rfid1:MOSI", "esp:D23", "green", [] ],
+    [ "rfid1:MISO", "esp:D19", "green", [] ],
+    [ "rfid1:RST", "esp:D25", "green", [] ],
+    [ "rfid1:3.3V", "esp:3V3", "red", [] ],
+    [ "rfid1:GND", "esp:GND.3", "black", [] ]
   ]
 }
