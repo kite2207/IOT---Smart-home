@@ -2,6 +2,8 @@
 #include "display.h"
 #include "led.h"
 #include "mqtt_manager.h"
+#include "dht_sensor.h"
+#include "fan_ctrl.h"
 #include "wifi_manager.h"
 #include "ultrasonic.h"
 
@@ -15,6 +17,8 @@ void setup() {
 
     setupDisplay();
     setupLed();
+    setupFan();
+    setupDht();
 
     setupWifi();
     setupMqtt();
@@ -29,7 +33,7 @@ void loop() {
     {
         ultrasonic_lastMsg = now;
         String status = get_ultrasonic_status(ultrasonic_trigPin, ultrasonic_echoPin);
-        publishMessage("safehome/ultrasonic", status.c_str());
+        mqttPublish("safehome/ultrasonic", status.c_str());
     }
 
     delay(10);

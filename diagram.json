@@ -7,58 +7,79 @@
       "type": "board-esp32-devkit-v1",
       "id": "esp",
       "top": 0,
-      "left": 0,
+      "left": -100,
       "attrs": {}
     },
     {
       "type": "wokwi-led",
       "id": "led1",
-      "top": -20,
-      "left": 250,
-      "attrs": {
-        "color": "red"
-      }
+      "top": -120,
+      "left": 150,
+      "attrs": { "color": "red" }
     },
     {
       "type": "wokwi-resistor",
       "id": "r1",
-      "top": 20,
-      "left": 250,
+      "top": -70,
+      "left": 150,
+      "attrs": { "value": "220" }
+    },
+
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": 50,
+      "left": 150,
       "attrs": {
-        "value": "220"
+        "temperature": "32",
+        "humidity": "75"
       }
     },
     {
       "type": "wokwi-lcd1602",
       "id": "lcd1",
-      "top": 180,
-      "left": 180,
+      "top": 150,
+      "left": 250,
       "attrs": {
         "pins": "i2c",
         "address": "0x27"
       }
     },
+
     {
-      "type": "wokwi-hc-sr04",
-      "id": "ultrasonic1",
-      "top": -150,
-      "left": 100,
+      "type": "wokwi-led",
+      "id": "fanLed",
+      "top": 350,
+      "left": 350,
       "attrs": {
-        "distance": "50"
+        "color": "blue",
+        "label": "Quạt"
       }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "fanResistor",
+      "top": 390,
+      "left": 250,
+      "attrs": { "value": "220" }
     }
   ],
   "connections": [
-    [ "esp:D2", "r1:1", "green", [] ],
-    [ "r1:2", "led1:A", "green", [] ],
-    [ "led1:C", "esp:GND.1", "black", [] ],
-    [ "lcd1:SDA", "esp:D21", "blue", [] ],
-    [ "lcd1:SCL", "esp:D22", "blue", [] ],
-    [ "lcd1:VCC", "esp:VIN", "red", [] ],
-    [ "lcd1:GND", "esp:GND.2", "black", [] ],
-    [ "ultrasonic1:VCC", "esp:VIN", "red", [ "v0" ] ],
-    [ "ultrasonic1:GND", "esp:GND.1", "black", [ "v0" ] ],
-    [ "ultrasonic1:TRIG", "esp:D26", "green", [ "v0" ] ],
-    [ "ultrasonic1:ECHO", "esp:D27", "blue", [ "v0" ] ]
+    [ "esp:D2",   "r1:1",          "green",  [ "h50" ] ],
+    [ "r1:2",     "led1:A",        "green",  [] ],
+    [ "led1:C",   "esp:GND.2",     "black",  [ "v-20", "h-100" ] ],
+
+    [ "esp:D21",  "lcd1:SDA",      "blue",   [ "h50", "v50" ] ],
+    [ "esp:D22",  "lcd1:SCL",      "blue",   [ "h60", "v70" ] ],
+    [ "esp:VIN",  "lcd1:VCC",      "red",    [ "h80", "v150" ] ],
+    [ "esp:GND.1","lcd1:GND",      "black",  [ "h70", "v170" ] ],
+
+    [ "esp:D4",   "dht1:SDA",      "yellow", [ "h30" ] ],
+    [ "esp:3V3",  "dht1:VCC",      "red",    [ "h40", "v60" ] ],
+    [ "esp:GND.2","dht1:GND",      "black",  [ "h20", "v40" ] ],
+
+    [ "esp:D19", "fanResistor:1", "cyan",  [ "h40", "v150" ] ],
+    [ "fanResistor:2", "fanLed:A", "cyan", [ "h20" ] ],
+    [ "esp:GND.1", "fanLed:C", "black", [ "h100", "v180" ] ]
   ]
 }
