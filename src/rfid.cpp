@@ -71,7 +71,9 @@ void rfidLoop() {
     printDisplayLine(0, "[RFID] Scanned");
     printDisplayLine(1, uid);
 
-    publishMqttMessage(RFID_SCAN_TOPIC, uid);
+    if (!publishMqttMessage(RFID_SCAN_TOPIC, uid)) {
+        Serial.println("[RFID] Failed to publish scan (MQTT disconnected)");
+    }
 
     reader.PICC_HaltA();
     reader.PCD_StopCrypto1();
