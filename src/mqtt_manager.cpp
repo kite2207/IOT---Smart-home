@@ -104,10 +104,8 @@ void mqttLoop() {
     mqttClient.loop();
 }
 
-bool publishMqttMessage(const char* topic, const char* message) {
-    if (!mqttClient.connected()) {
-        return false;
+void publishMessage(const char* topic, const char* payload) {
+    if (mqttClient.connected()) {
+        mqttClient.publish(topic, payload);
     }
-
-    return mqttClient.publish(topic, message);
 }
