@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include "display.h"
+#include "servo_ctrl.h"
 
 // Sử dụng namespace ẩn để giới hạn phạm vi biến chỉ trong file cpp này
 namespace {
@@ -25,16 +26,29 @@ namespace {
         Serial.println(message);
 
         // --- Xử lý logic điều khiển tại đây ---
-        // Ví dụ: Nhận lệnh bật/tắt LED
-        if (strcmp(topic, "safehome/led/set") == 0) {
+        // Lệnh bật/tắt LED
+        if (strcmp(topic, LED_COMMAND) == 0) {
             if (message == "ON") {
                 Serial.print("ON");
             } else if (message == "OFF") {
                 Serial.print("OFF");
             }
         }
-    }
-}
+
+        // Lệnh điều khiển servo: nhận số góc 0-180
+        if (strcmp(topic, SERVO_COMMAND) == 0) {
+            int angle = message.toInt();
+            if (angle >= 0 && angle <= 180) {
+                setServoAngle((uint8_t)angle);
+                // Phản hồi góc thực tế lên topic state
+                String stateStr = String(angle);
+                mqttClient.publish(SERVO_STATE, stateStr.c_str(), true);
+            } else {
+                Serial.println("[SERVO] Goc khong hop le (0-180)");
+            }
+        }
+    }  // mqttCallback
+}  // namespace
 
 
 
@@ -47,8 +61,9 @@ void connectMqtt() {
 
         if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASSWORD)) {
             printDisplayLine(0," Thanh cong!");
-            // Đăng ký topic ở đây nếu cần
-            mqttClient.subscribe("safehome/led/set");
+            // Đăng ký topics
+            mqttClient.subscribe(LED_COMMAND);
+            mqttClient.subscribe(SERVO_COMMAND);
         } else {
             printDisplayLine(0," That bai");
             delay(5000);
