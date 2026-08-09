@@ -1,0 +1,330 @@
+[
+    {
+        "id": "a25cc6e926258f9f",
+        "type": "tab",
+        "label": "Flow 3",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c300d5c5c451ef4f",
+        "type": "inject",
+        "z": "a25cc6e926258f9f",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 270,
+        "y": 360,
+        "wires": [
+            [
+                "275b9089ca2238ed"
+            ]
+        ]
+    },
+    {
+        "id": "275b9089ca2238ed",
+        "type": "http request",
+        "z": "a25cc6e926258f9f",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://wfkesifcfgajgymipqcd.supabase.co/rest/v1/environment_log?select=temperature,humidity,recorded_at&order=recorded_at.asc&limit=24",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "apikey",
+                "valueType": "other",
+                "valueValue": "sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY"
+            }
+        ],
+        "x": 450,
+        "y": 360,
+        "wires": [
+            [
+                "b0f6989af576b3e3"
+            ]
+        ]
+    },
+    {
+        "id": "b0f6989af576b3e3",
+        "type": "json",
+        "z": "a25cc6e926258f9f",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 630,
+        "y": 360,
+        "wires": [
+            [
+                "b7005869aa978bd0"
+            ]
+        ]
+    },
+    {
+        "id": "b7005869aa978bd0",
+        "type": "function",
+        "z": "a25cc6e926258f9f",
+        "name": "function 5",
+        "func": "const rows = msg.payload;\n\nif (!Array.isArray(rows)) {\n    node.error(\"Supabase không trả về mảng dữ liệu\", msg);\n    return null;\n}\n\nconst points = rows.map(row => ({\n    time: new Date(row.recorded_at).getTime(),\n    label: new Date(row.recorded_at).toLocaleTimeString(\"vi-VN\", {\n        hour: \"2-digit\",\n        minute: \"2-digit\"\n    }),\n    temperature: Number(row.temperature),\n    humidity: Number(row.humidity)\n}));\n\nconst temperatureStyle = {\n    ui_update: {\n        chartOptions: {\n            color: [\"#F44336\"],\n            textStyle: {\n                color: \"#000000ff\"\n            },\n            title: {\n                textStyle: {\n                    color: \"#000000ff\"\n                }\n            },\n            legend: {\n                textStyle: {\n                    color: \"#000000ff\"\n                }\n            },\n            xAxis: {\n                axisLabel: { color: \"#000000ff\" },\n                nameTextStyle: { color: \"#000000ff\" }\n            },\n            yAxis: {\n                axisLabel: { color: \"#000000ff\" },\n                nameTextStyle: { color: \"#000000ff\" }\n            },\n            series: [{\n                name: \"Temperature (°C)\",\n                type: \"line\",\n                lineStyle: { color: \"#F44336\" },\n                itemStyle: { color: \"#F44336\" }\n            }]\n        }\n    }\n};\n\nconst humidityStyle = {\n    ui_update: {\n        chartOptions: {\n            color: [\"#2196F3\"],\n            textStyle: { color: \"#000000\" },\n            title: {\n                textStyle: { color: \"#000000\" }\n            },\n            legend: {\n                textStyle: { color: \"#000000ff\" }\n            },\n            xAxis: {\n                axisLabel: { color: \"#000000\" },\n                nameTextStyle: { color: \"#000000\" }\n            },\n            yAxis: {\n                axisLabel: { color: \"#000000\" },\n                nameTextStyle: { color: \"#000000\" }\n            },\n            series: [{\n                name: \"Humidity (%)\",\n                type: \"bar\",\n                itemStyle: { color: \"#2196F3\" }\n            }]\n        }\n    }\n};\n\nconst temperatureData = {\n    topic: \"Temperature (°C)\",\n    action: \"replace\",\n    payload: points\n};\n\nconst humidityData = {\n    topic: \"Humidity (%)\",\n    action: \"replace\",\n    payload: points\n};\n\nreturn [\n    [temperatureStyle, temperatureData],\n    [humidityStyle, humidityData]\n];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 360,
+        "wires": [
+            [
+                "7bf5ca60b82a6b93"
+            ],
+            [
+                "c19be3aa0e38896b"
+            ]
+        ]
+    },
+    {
+        "id": "c19be3aa0e38896b",
+        "type": "ui-chart",
+        "z": "a25cc6e926258f9f",
+        "group": "b31a264fc8d83f12",
+        "name": "Humidity",
+        "label": "chart",
+        "order": 1,
+        "chartType": "bar",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "label",
+        "xAxisPropertyType": "property",
+        "xAxisType": "category",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "humidity",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "replace",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": 1,
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#666666"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#e5e5e5"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 960,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7bf5ca60b82a6b93",
+        "type": "ui-chart",
+        "z": "a25cc6e926258f9f",
+        "group": "b31a264fc8d83f12",
+        "name": "Temperature",
+        "label": "chart",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "",
+        "xAxisProperty": "time",
+        "xAxisPropertyType": "property",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "xmin": "",
+        "xmax": "",
+        "yAxisLabel": "",
+        "yAxisProperty": "temperature",
+        "yAxisPropertyType": "property",
+        "ymin": "",
+        "ymax": "",
+        "bins": 10,
+        "action": "replace",
+        "stackSeries": false,
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "0",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#0095ff",
+            "#ff0000",
+            "#ff7f0e",
+            "#2ca02c",
+            "#a347e1",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "textColor": [
+            "#ff0505"
+        ],
+        "textColorDefault": true,
+        "gridColor": [
+            "#ff0000"
+        ],
+        "gridColorDefault": true,
+        "width": 6,
+        "height": 8,
+        "className": "",
+        "interpolation": "linear",
+        "x": 970,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b31a264fc8d83f12",
+        "type": "ui-group",
+        "name": "humi_temp_chart",
+        "page": "0d1f242ad047c298",
+        "width": "12",
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "0d1f242ad047c298",
+        "type": "ui-page",
+        "name": "3",
+        "ui": "c1fa52fe677cc1d1",
+        "path": "/page4",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "f159aa0cf13dfb1f",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "c1fa52fe677cc1d1",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "f159aa0cf13dfb1f",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "8aa98b321a51993c",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
+    }
+]

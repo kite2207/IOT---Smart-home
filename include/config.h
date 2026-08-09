@@ -15,6 +15,10 @@ constexpr uint8_t RFID_SCK_PIN = 18;
 constexpr uint8_t RFID_MISO_PIN = 19;
 constexpr uint8_t RFID_MOSI_PIN = 23;
 
+// Ultrasonic
+constexpr uint8_t ultrasonic_trigPin = 26;
+constexpr uint8_t ultrasonic_echoPin = 27;
+
 // Optional serial diagnostics
 constexpr bool DEBUG_SERIAL = false;
 

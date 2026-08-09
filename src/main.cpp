@@ -8,8 +8,6 @@
 #include "wifi_manager.h"
 #include "ultrasonic.h"
 
-const int ultrasonic_trigPin = 26;
-const int ultrasonic_echoPin = 27;
 unsigned long ultrasonic_lastMsg = 0;
 
 void setup() {
@@ -22,6 +20,7 @@ void setup() {
     setupWifi();
     setupMqtt();
     setupRfid();
+    setup_ultrasonic(ultrasonic_trigPin, ultrasonic_echoPin);
 }
 
 void loop() {
@@ -33,9 +32,10 @@ void loop() {
     if (now - ultrasonic_lastMsg > 1000)
     {
         ultrasonic_lastMsg = now;
-        String status = get_ultrasonic_status(ultrasonic_trigPin, ultrasonic_echoPin);
-        publishMessage("safehome/ultrasonic", status.c_str());
+        const bool detected = get_ultrasonic_status(ultrasonic_trigPin, ultrasonic_echoPin);
+        publishMessage("safehome/ultrasonic", detected ? "true" : "false");
     }
 
+    rfidLoop();
     delay(10);
 }
