@@ -6,8 +6,10 @@
 #include "display.h"
 
 void setupWifi() {
-    Serial.print("\n[WIFI] Dang ket noi toi ");
+    Serial.print("\n[WIFI] Connecting to ");
     Serial.println(WIFI_SSID);
+
+    printDisplayLine(0, "[WIFI] Connecting");
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -17,14 +19,17 @@ void setupWifi() {
         Serial.print(".");
     }
 
-    Serial.print("\n[WIFI] Da ket noi thanh cong!");
-    Serial.print("[WIFI] Dia chi IP: ");
+    Serial.print("\n[WIFI] Connected successfully!");
+    Serial.print("[WIFI] IP Address: ");
     Serial.println(WiFi.localIP());
+
+    printDisplayLine(0, "[WIFI] Connected!");
 }
 
 void keepWifiConnected() {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("\n[WIFI] Mat ket noi! Dang thu ket noi lai...");
+        Serial.println("\n[WIFI] Connection lost! Reconnecting...");
+        printDisplayLine(0, "[WIFI] Lost! Retry");
         setupWifi();
     }
 }
