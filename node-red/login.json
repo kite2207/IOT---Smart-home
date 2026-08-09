@@ -1,0 +1,355 @@
+[
+    {
+        "id": "a26aa76f5d84d03a",
+        "type": "tab",
+        "label": "Flow 4",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "71d13ecaccd80988",
+        "type": "http in",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "url": "/auth/login",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 420,
+        "y": 780,
+        "wires": [
+            [
+                "028c40679b2df0de"
+            ]
+        ]
+    },
+    {
+        "id": "1448d3025e3a1c35",
+        "type": "http in",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "url": "/auth/register",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 410,
+        "y": 940,
+        "wires": [
+            [
+                "b4617a6572abe29f"
+            ]
+        ]
+    },
+    {
+        "id": "028c40679b2df0de",
+        "type": "json",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 570,
+        "y": 780,
+        "wires": [
+            [
+                "6e26cc3cad629303"
+            ]
+        ]
+    },
+    {
+        "id": "b4617a6572abe29f",
+        "type": "json",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 570,
+        "y": 940,
+        "wires": [
+            [
+                "92ad155650722306"
+            ]
+        ]
+    },
+    {
+        "id": "6e26cc3cad629303",
+        "type": "function",
+        "z": "a26aa76f5d84d03a",
+        "name": "function 6",
+        "func": "const { email, password } = msg.payload || {};\n\nif (!email || !password) {\n    msg.statusCode = 400;\n    msg.payload = {\n        ok: false,\n        message: \"Vui lòng nhập email và mật khẩu.\"\n    };\n    return [null, msg]; // đi thẳng tới http response\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") +\n    \"/auth/v1/token?grant_type=password\";\n\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = { email, password };\n\nreturn [msg, null]; // gửi sang http request",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 780,
+        "wires": [
+            [
+                "c92fb4dd760bb30a"
+            ],
+            [
+                "20e5d0680bd9b2ec"
+            ]
+        ]
+    },
+    {
+        "id": "92ad155650722306",
+        "type": "function",
+        "z": "a26aa76f5d84d03a",
+        "name": "function 7",
+        "func": "const { full_name, email, password, re_password } = msg.payload || {};\n\nif (!email || !password || !re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Vui lòng nhập đủ thông tin.\" };\n    return [null, msg];\n}\n\nif (password !== re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu nhập lại không khớp.\" };\n    return [null, msg];\n}\n\nif (password.length < 6) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu phải có ít nhất 6 ký tự.\" };\n    return [null, msg];\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") + \"/auth/v1/signup\";\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\nmsg.payload = {\n    email,\n    password,\n    data: { full_name }\n};\n\nreturn [msg, null];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 940,
+        "wires": [
+            [
+                "8bfe62f2f4bcc786"
+            ],
+            [
+                "e0713ae1267f3260"
+            ]
+        ]
+    },
+    {
+        "id": "c92fb4dd760bb30a",
+        "type": "http request",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 910,
+        "y": 720,
+        "wires": [
+            [
+                "e872453333ea4634"
+            ]
+        ]
+    },
+    {
+        "id": "8bfe62f2f4bcc786",
+        "type": "http request",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 890,
+        "y": 880,
+        "wires": [
+            [
+                "22cc504cc620c628"
+            ]
+        ]
+    },
+    {
+        "id": "e872453333ea4634",
+        "type": "function",
+        "z": "a26aa76f5d84d03a",
+        "name": "function 8",
+        "func": "const result = msg.payload || {};\nconst status = Number(msg.statusCode || 500);\n\nif (status >= 200 && status < 300 && result.access_token) {\n    msg.statusCode = 200;\n    msg.payload = {\n        ok: true,\n        message: \"Đăng nhập thành công.\",\n        access_token: result.access_token,\n        refresh_token: result.refresh_token,\n        user: {\n            id: result.user.id,\n            email: result.user.email\n        }\n    };\n} else {\n    msg.statusCode = status >= 400 ? status : 401;\n    msg.payload = {\n        ok: false,\n        message: result.msg || result.message || \"Email hoặc mật khẩu không đúng.\"\n    };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 720,
+        "wires": [
+            [
+                "20e5d0680bd9b2ec"
+            ]
+        ]
+    },
+    {
+        "id": "22cc504cc620c628",
+        "type": "function",
+        "z": "a26aa76f5d84d03a",
+        "name": "function 9",
+        "func": "const result = msg.payload || {};\nconst status = Number(msg.statusCode || 500);\n\n// Supabase của bạn trả user trực tiếp; vẫn hỗ trợ cả dạng result.user.\nconst user = result.user || (result.id ? result : null);\n\nif (status >= 200 && status < 300 && user) {\n    msg.statusCode = 201;\n\n    msg.payload = {\n        ok: true,\n        message: result.confirmation_sent_at\n            ? \"Đăng ký thành công. Hãy kiểm tra email để xác nhận tài khoản.\"\n            : \"Đăng ký thành công. Bạn có thể đăng nhập ngay.\",\n        user: {\n            id: user.id,\n            email: user.email\n        }\n    };\n} else {\n    msg.statusCode = status >= 400 ? status : 400;\n\n    msg.payload = {\n        ok: false,\n        message:\n            result.msg ||\n            result.message ||\n            result.error_description ||\n            result.error?.message ||\n            \"Không thể đăng ký tài khoản.\"\n    };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1080,
+        "y": 880,
+        "wires": [
+            [
+                "e0713ae1267f3260"
+            ]
+        ]
+    },
+    {
+        "id": "20e5d0680bd9b2ec",
+        "type": "http response",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1230,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "e0713ae1267f3260",
+        "type": "http response",
+        "z": "a26aa76f5d84d03a",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1230,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "a56dc4c258558f69",
+        "type": "ui-template",
+        "z": "a26aa76f5d84d03a",
+        "group": "1e2bbc148d9e8140",
+        "page": "",
+        "ui": "",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"auth-wrap\">\n    <div class=\"auth-card\">\n      <h1>SAFEHOME</h1>\n      <p class=\"subtitle\">\n        {{ isRegister ? 'Tạo tài khoản mới' : 'Đăng nhập để quản lý ngôi nhà của bạn' }}\n      </p>\n\n      <form @submit.prevent=\"isRegister ? register() : login()\">\n        <label>Họ và tên</label>\n        <input\n          v-if=\"isRegister\"\n          v-model.trim=\"fullName\"\n          type=\"text\"\n          placeholder=\"Nguyễn Văn A\"\n        >\n\n        <label>Email</label>\n        <input\n          v-model.trim=\"email\"\n          type=\"email\"\n          placeholder=\"email@example.com\"\n          required\n        >\n\n        <label>Mật khẩu</label>\n        <input\n          v-model=\"password\"\n          type=\"password\"\n          placeholder=\"Tối thiểu 6 ký tự\"\n          required\n        >\n\n        <template v-if=\"isRegister\">\n          <label>Nhập lại mật khẩu</label>\n          <input\n            v-model=\"rePassword\"\n            type=\"password\"\n            placeholder=\"Nhập lại mật khẩu\"\n            required\n          >\n        </template>\n\n        <p v-if=\"message\" :class=\"success ? 'success' : 'error'\">\n          {{ message }}\n        </p>\n\n        <button type=\"submit\" :disabled=\"loading\">\n          {{ loading ? 'Đang xử lý...' : (isRegister ? 'Đăng ký' : 'Đăng nhập') }}\n        </button>\n      </form>\n\n      <button class=\"link-button\" @click=\"switchForm\">\n        {{ isRegister\n          ? 'Đã có tài khoản? Đăng nhập'\n          : 'Chưa có tài khoản? Đăng ký ngay' }}\n      </button>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      isRegister: false,\n      fullName: '',\n      email: '',\n      password: '',\n      rePassword: '',\n      message: '',\n      success: false,\n      loading: false\n    }\n  },\n\n  methods: {\n    switchForm() {\n      this.isRegister = !this.isRegister\n      this.message = ''\n      this.success = false\n      this.password = ''\n      this.rePassword = ''\n    },\n\n    async login() {\n      await this.callApi('/auth/login', {\n        email: this.email,\n        password: this.password\n      }, true)\n    },\n\n    async register() {\n      if (this.password !== this.rePassword) {\n        this.success = false\n        this.message = 'Mật khẩu nhập lại không khớp.'\n        return\n      }\n\n      await this.callApi('/auth/register', {\n        full_name: this.fullName,\n        email: this.email,\n        password: this.password,\n        re_password: this.rePassword\n      }, false)\n    },\n\n    async callApi(url, body, isLogin) {\n      this.loading = true\n      this.message = ''\n\n      try {\n        const response = await fetch(url, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify(body)\n        })\n\n        const result = await response.json()\n        this.success = result.ok\n        this.message = result.message || 'Không nhận được phản hồi từ hệ thống.'\n\n        if (isLogin && result.ok && result.access_token) {\n          sessionStorage.setItem('safehome_access_token', result.access_token)\n          sessionStorage.setItem('safehome_user', JSON.stringify(result.user))\n\n          setTimeout(() => {\n            window.location.href = '/dashboard/page2'\n          }, 700)\n        }\n\n        if (!isLogin && result.ok) {\n          this.isRegister = false\n          this.password = ''\n          this.rePassword = ''\n        }\n      } catch (error) {\n        this.success = false\n        this.message = 'Không thể kết nối đến máy chủ Node-RED.'\n      } finally {\n        this.loading = false\n      }\n    }\n  }\n}\n</script>\n\n<style scoped>\n.auth-wrap {\n  min-height: 75vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 24px;\n  background: #f3f6f8;\n}\n\n.auth-card {\n  width: min(100%, 420px);\n  padding: 32px;\n  border-radius: 16px;\n  background: #ffffff;\n  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);\n}\n\nh1 {\n  margin: 0;\n  text-align: center;\n  color: #176b4a;\n  letter-spacing: 2px;\n}\n\n.subtitle {\n  margin: 10px 0 24px;\n  color: #667085;\n  text-align: center;\n}\n\nlabel {\n  display: block;\n  margin: 14px 0 6px;\n  font-weight: 600;\n  color: #344054;\n}\n\ninput {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 12px;\n  border: 1px solid #d0d5dd;\n  border-radius: 8px;\n  font-size: 15px;\n}\n\nbutton {\n  width: 100%;\n  margin-top: 22px;\n  padding: 12px;\n  border: 0;\n  border-radius: 8px;\n  background: #176b4a;\n  color: white;\n  font-size: 16px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\nbutton:disabled {\n  background: #98a2b3;\n  cursor: not-allowed;\n}\n\n.link-button {\n  margin-top: 12px;\n  background: transparent;\n  color: #176b4a;\n}\n\n.error, .success {\n  margin: 14px 0 0;\n  padding: 10px;\n  border-radius: 8px;\n}\n\n.error {\n  background: #fef3f2;\n  color: #b42318;\n}\n\n.success {\n  background: #ecfdf3;\n  color: #027a48;\n}\n</style>",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 220,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1e2bbc148d9e8140",
+        "type": "ui-group",
+        "name": "ui-group",
+        "page": "3f98f7d479b2b8f2",
+        "width": "12",
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "3f98f7d479b2b8f2",
+        "type": "ui-page",
+        "name": "ui-page",
+        "ui": "c1fa52fe677cc1d1",
+        "path": "/page5",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "f159aa0cf13dfb1f",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "c1fa52fe677cc1d1",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "f159aa0cf13dfb1f",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "88253e6c17ccae9d",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
+    }
+]
