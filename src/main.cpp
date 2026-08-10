@@ -26,6 +26,7 @@ void setup() {
 void loop() {
     keepWifiConnected();
     mqttLoop();
+    rfidLoop();
 
     unsigned long now = millis();
     if (now - ultrasonic_lastMsg > 1000)

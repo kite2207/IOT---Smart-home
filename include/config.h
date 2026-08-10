@@ -4,7 +4,7 @@
 constexpr uint8_t LED_PIN = 2;
 constexpr uint8_t LCD_SDA_PIN = 21;
 constexpr uint8_t LCD_SCL_PIN = 22;
-constexpr uint8_t LCD_I2C_ADDRESS = 0x27;
+constexpr uint8_t LCD_I2C_ADDRESS = 0x3F;
 constexpr uint8_t LCD_COLUMNS = 16;
 constexpr uint8_t LCD_ROWS = 2;
 
