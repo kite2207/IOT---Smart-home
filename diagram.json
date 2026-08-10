@@ -62,6 +62,16 @@
       "top": 390,
       "left": 250,
       "attrs": { "value": "220" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo1",
+      "top": 450,
+      "left": -200,
+      "attrs": {
+        "horn": "single",
+        "label": "Chot cua"
+      }
     }
   ],
   "connections": [
@@ -80,6 +90,10 @@
 
     [ "esp:D19", "fanResistor:1", "cyan",  [ "h40", "v150" ] ],
     [ "fanResistor:2", "fanLed:A", "cyan", [ "h20" ] ],
-    [ "esp:GND.1", "fanLed:C", "black", [ "h100", "v180" ] ]
+    [ "esp:GND.1", "fanLed:C", "black", [ "h100", "v180" ] ],
+
+    [ "esp:D18",   "servo1:PWM",   "orange", [ "h-50", "v200" ] ],
+    [ "esp:5V",    "servo1:V+",    "red",    [ "h-80", "v250" ] ],
+    [ "esp:GND.2", "servo1:GND",   "black",  [ "h-60", "v270" ] ]
   ]
 }

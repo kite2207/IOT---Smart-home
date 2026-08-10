@@ -1,35 +1,5 @@
 [
   {
-    "id": "broker-hivemq",
-    "type": "mqtt-broker",
-    "name": "HiveMQ SafeHome",
-    "broker": "2cdbc656a97a4c3daad987b08d8a473e.s1.eu.hivemq.cloud",
-    "port": "8883",
-    "clientid": "node-red-safehome",
-    "autoConnect": true,
-    "usetls": true,
-    "protocolVersion": "4",
-    "keepalive": "60",
-    "cleansession": true,
-    "credentials": {
-      "user": "KoKoNut",
-      "password": "kkn!@#1236"
-    }
-  },
-  {
-    "id": "tls-hivemq",
-    "type": "tls-config",
-    "name": "HiveMQ TLS",
-    "verifyservercert": false
-  },
-  {
-    "id": "tab-safehome",
-    "type": "ui_tab",
-    "name": "SafeHome",
-    "icon": "home",
-    "order": 1
-  },
-  {
     "id": "tab-supabase",
     "type": "tab",
     "label": "Supabase Logging",
@@ -44,232 +14,293 @@
     "info": "Gui email canh bao khi RFID bi tu choi (DENIED)."
   },
   {
-    "id": "group-door",
-    "type": "ui_group",
-    "name": "Door Control",
-    "tab": "tab-safehome",
-    "order": 1,
-    "disp": true,
-    "width": "6"
-  },
-  {
-    "id": "group-fan",
-    "type": "ui_group",
-    "name": "Quat lam mat",
-    "tab": "tab-safehome",
-    "order": 3,
-    "disp": true,
-    "width": "6"
-  },
-  {
-    "id": "group-notifications",
-    "type": "ui_group",
-    "name": "Notifications",
-    "tab": "tab-safehome",
-    "order": 4,
-    "disp": true,
-    "width": "6"
-  },
-  {
     "id": "flow-safehome",
     "type": "tab",
     "label": "SafeHome Flow",
     "disabled": false
   },
   {
-    "id": "btn-door-open",
-    "type": "ui_button",
-    "z": "flow-safehome",
-    "name": "Mo Cua",
-    "group": "group-door",
+    "id": "8d4792cf5dad1653",
+    "type": "tab",
+    "label": "Flow 2",
+    "disabled": false,
+    "info": "",
+    "env": []
+  },
+  {
+    "id": "a25cc6e926258f9f",
+    "type": "tab",
+    "label": "Flow 3",
+    "disabled": false,
+    "info": "",
+    "env": []
+  },
+  {
+    "id": "a26aa76f5d84d03a",
+    "type": "tab",
+    "label": "Flow 4",
+    "disabled": false,
+    "info": "",
+    "env": []
+  },
+  {
+    "id": "broker-hivemq",
+    "type": "mqtt-broker",
+    "name": "HiveMQ SafeHome",
+    "broker": "2cdbc656a97a4c3daad987b08d8a473e.s1.eu.hivemq.cloud",
+    "port": "8883",
+    "clientid": "node-red-safehome",
+    "autoConnect": true,
+    "usetls": true,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true
+  },
+  {
+    "id": "tls-hivemq",
+    "type": "tls-config",
+    "name": "HiveMQ TLS",
+    "verifyservercert": false
+  },
+  {
+    "id": "c1fa52fe677cc1d1",
+    "type": "ui-base",
+    "name": "My Dashboard",
+    "path": "/dashboard",
+    "appIcon": "",
+    "includeClientData": true,
+    "acceptsClientConfig": [
+      "ui-notification",
+      "ui-control"
+    ],
+    "showPathInSidebar": false,
+    "headerContent": "page",
+    "navigationStyle": "default",
+    "titleBarStyle": "default",
+    "showReconnectNotification": true,
+    "notificationDisplayTime": 1,
+    "showDisconnectNotification": true,
+    "allowInstall": false
+  },
+  {
+    "id": "f159aa0cf13dfb1f",
+    "type": "ui-theme",
+    "name": "Default Theme",
+    "colors": {
+      "surface": "#ffffff",
+      "primary": "#0094CE",
+      "bgPage": "#eeeeee",
+      "groupBg": "#ffffff",
+      "groupOutline": "#cccccc"
+    },
+    "sizes": {
+      "density": "default",
+      "pagePadding": "12px",
+      "groupGap": "12px",
+      "groupBorderRadius": "4px",
+      "widgetGap": "12px"
+    }
+  },
+  {
+    "id": "934b907f9a8d4dd5",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@flowfuse/node-red-dashboard": "1.30.2"
+    }
+  },
+  {
+    "id": "0d1f242ad047c298",
+    "type": "ui-page",
+    "name": "3",
+    "ui": "c1fa52fe677cc1d1",
+    "path": "/page4",
+    "icon": "home",
+    "layout": "grid",
+    "theme": "f159aa0cf13dfb1f",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
     "order": 1,
-    "width": "3",
-    "height": "1",
-    "label": "MO CUA",
-    "color": "white",
-    "bgcolor": "#27ae60",
-    "icon": "lock_open",
-    "payload": "OPEN",
-    "payloadType": "str",
-    "topic": "safehome/servo/set",
-    "topicType": "str",
-    "x": 160,
-    "y": 80,
-    "wires": [
-      [
-        "mqtt-out-door"
-      ]
-    ]
+    "className": "",
+    "visible": "true",
+    "disabled": "false"
   },
   {
-    "id": "btn-door-close",
-    "type": "ui_button",
-    "z": "flow-safehome",
-    "name": "Dong Cua",
-    "group": "group-door",
-    "order": 2,
-    "width": "3",
-    "height": "1",
-    "label": "DONG CUA",
-    "color": "white",
-    "bgcolor": "#e74c3c",
-    "icon": "lock",
-    "payload": "CLOSE",
-    "payloadType": "str",
-    "topic": "safehome/servo/set",
-    "topicType": "str",
-    "x": 160,
-    "y": 140,
-    "wires": [
-      [
-        "mqtt-out-door"
-      ]
-    ]
+    "id": "8aa98b321a51993c",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@flowfuse/node-red-dashboard": "1.30.2"
+    }
   },
   {
-    "id": "mqtt-out-door",
-    "type": "mqtt out",
-    "z": "flow-safehome",
-    "name": "Servo Command",
-    "topic": "safehome/servo/set",
-    "qos": "1",
-    "retain": "false",
-    "broker": "broker-hivemq",
-    "x": 380,
-    "y": 110,
-    "wires": []
-  },
-  {
-    "id": "text-door-state",
-    "type": "ui_text",
-    "z": "flow-safehome",
-    "group": "group-door",
+    "id": "3f98f7d479b2b8f2",
+    "type": "ui-page",
+    "name": "ui-page",
+    "ui": "c1fa52fe677cc1d1",
+    "path": "/page5",
+    "icon": "home",
+    "layout": "grid",
+    "theme": "f159aa0cf13dfb1f",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
     "order": 3,
+    "className": "",
+    "visible": "true",
+    "disabled": "false"
+  },
+  {
+    "id": "88253e6c17ccae9d",
+    "type": "global-config",
+    "env": [],
+    "modules": {
+      "@flowfuse/node-red-dashboard": "1.30.2"
+    }
+  },
+  {
+    "id": "group-door-2",
+    "type": "ui-group",
+    "name": "Door Control",
+    "page": "0d1f242ad047c298",
     "width": "6",
-    "height": "1",
-    "label": "Trang thai cua:",
-    "format": "{{msg.payload}}",
-    "layout": "row-spread",
-    "x": 380,
-    "y": 200,
-    "wires": []
+    "order": 4,
+    "showTitle": true
   },
   {
-    "id": "mqtt-in-door-state",
-    "type": "mqtt in",
-    "z": "flow-safehome",
-    "name": "Door State",
-    "topic": "safehome/servo/state",
-    "qos": "1",
-    "datatype": "utf8",
-    "broker": "broker-hivemq",
-    "x": 160,
-    "y": 200,
-    "wires": [
-      [
-        "text-door-state"
-      ]
-    ]
+    "id": "group-fan-2",
+    "type": "ui-group",
+    "name": "Quat lam mat",
+    "page": "0d1f242ad047c298",
+    "width": "6",
+    "order": 3,
+    "showTitle": true
   },
   {
-    "id": "switch-fan",
-    "type": "ui_switch",
-    "z": "flow-safehome",
-    "name": "Quat Bat/Tat",
-    "label": "Quat",
-    "group": "group-fan",
+    "id": "group-notif-2",
+    "type": "ui-group",
+    "name": "Notifications",
+    "page": "0d1f242ad047c298",
+    "width": "6",
     "order": 1,
-    "onvalue": "ON",
-    "onvalueType": "str",
-    "offvalue": "OFF",
-    "offvalueType": "str",
-    "topic": "safehome/fan/set",
-    "topicType": "str",
-    "x": 160,
-    "y": 460,
-    "wires": [
-      [
-        "mqtt-out-fan"
-      ]
-    ]
+    "showTitle": true
   },
   {
-    "id": "mqtt-out-fan",
-    "type": "mqtt out",
-    "z": "flow-safehome",
-    "name": "Fan Control",
-    "topic": "safehome/fan/set",
-    "qos": "0",
-    "retain": "false",
-    "broker": "broker-hivemq",
-    "x": 380,
-    "y": 460,
-    "wires": []
-  },
-  {
-    "id": "mqtt-in-fan-state",
-    "type": "mqtt in",
-    "z": "flow-safehome",
-    "name": "Fan State",
-    "topic": "safehome/fan/state",
-    "qos": "0",
-    "datatype": "utf8",
-    "broker": "broker-hivemq",
-    "x": 160,
-    "y": 520,
-    "wires": [
-      [
-        "text-fan-state",
-        "switch-fan"
-      ]
-    ]
-  },
-  {
-    "id": "switch-email-notify",
-    "type": "ui_switch",
-    "z": "flow-safehome",
-    "name": "Email Notifications",
-    "label": "Thong bao Email",
-    "group": "group-notifications",
-    "order": 1,
-    "onvalue": true,
-    "onvalueType": "bool",
-    "offvalue": false,
-    "offvalueType": "bool",
-    "x": 160,
-    "y": 620,
-    "wires": [
-      [
-        "fn-set-email-flag"
-      ]
-    ]
-  },
-  {
-    "id": "fn-set-email-flag",
-    "type": "function",
-    "z": "flow-safehome",
-    "name": "Set Email Flag",
-    "func": "flow.set('emailEnabled', msg.payload);\nmsg.payload = msg.payload ? 'Email: BAT' : 'Email: TAT';\nreturn msg;",
-    "outputs": 1,
-    "x": 380,
-    "y": 620,
-    "wires": [
-      [
-        "text-email-status"
-      ]
-    ]
-  },
-  {
-    "id": "text-email-status",
-    "type": "ui_text",
-    "z": "flow-safehome",
-    "group": "group-notifications",
+    "id": "4c68826e1ed2155e",
+    "type": "ui-page",
+    "name": "2",
+    "ui": "c1fa52fe677cc1d1",
+    "path": "/page3",
+    "icon": "home",
+    "layout": "grid",
+    "theme": "f159aa0cf13dfb1f",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
     "order": 2,
-    "label": "Trang thai:",
-    "format": "{{msg.payload}}",
-    "x": 580,
-    "y": 620,
-    "wires": []
+    "className": "",
+    "visible": "true",
+    "disabled": "false"
+  },
+  {
+    "id": "b31a264fc8d83f12",
+    "type": "ui-group",
+    "name": "humi_temp_chart",
+    "page": "0d1f242ad047c298",
+    "width": "12",
+    "height": 1,
+    "order": 2,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "1e2bbc148d9e8140",
+    "type": "ui-group",
+    "name": "ui-group",
+    "page": "3f98f7d479b2b8f2",
+    "width": "12",
+    "height": 1,
+    "order": 1,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "802dbdbb1171fb0f",
+    "type": "ui-group",
+    "name": "Chatbot",
+    "page": "4c68826e1ed2155e",
+    "width": 6,
+    "height": 1,
+    "order": 1,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
   },
   {
     "id": "supabase-config",
@@ -277,8 +308,8 @@
     "z": "tab-supabase",
     "name": "Supabase Config",
     "func": "flow.set('SUPABASE_URL',      'https://wfkesifcfgajgymipqcd.supabase.co');\nflow.set('SUPABASE_ANON_KEY', 'sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY');\nreturn msg;",
-    "initialize": "flow.set('SUPABASE_URL',      'https://wfkesifcfgajgymipqcd.supabase.co');\nflow.set('SUPABASE_ANON_KEY', 'sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY');\nflow.set('emailEnabled', false);",
     "outputs": 1,
+    "initialize": "flow.set('SUPABASE_URL',      'https://wfkesifcfgajgymipqcd.supabase.co');\nflow.set('SUPABASE_ANON_KEY', 'sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY');\nflow.set('emailEnabled', false);",
     "x": 200,
     "y": 60,
     "wires": [
@@ -351,6 +382,7 @@
     "qos": "0",
     "datatype": "utf8",
     "broker": "broker-hivemq",
+    "inputs": 0,
     "x": 160,
     "y": 220,
     "wires": [
@@ -381,6 +413,7 @@
     "qos": "0",
     "datatype": "utf8",
     "broker": "broker-hivemq",
+    "inputs": 0,
     "x": 160,
     "y": 270,
     "wires": [
@@ -411,6 +444,7 @@
     "qos": "0",
     "datatype": "utf8",
     "broker": "broker-hivemq",
+    "inputs": 0,
     "x": 160,
     "y": 320,
     "wires": [
@@ -465,6 +499,37 @@
     ]
   },
   {
+    "id": "inject-fake-dht",
+    "type": "inject",
+    "z": "tab-supabase",
+    "name": "TEST: Gia lap DHT data",
+    "once": false,
+    "payload": "fake",
+    "payloadType": "str",
+    "x": 200,
+    "y": 450,
+    "wires": [
+      [
+        "fn-fake-dht"
+      ]
+    ]
+  },
+  {
+    "id": "fn-fake-dht",
+    "type": "function",
+    "z": "tab-supabase",
+    "name": "Set fake temp+hum vao context",
+    "func": "flow.set('latestTemp', 32.5);\nflow.set('latestHum',  75.0);\nflow.set('latestFan',  true);\nnode.warn('Da set: Temp=32.5, Hum=75, Fan=ON');\nreturn msg;",
+    "outputs": 1,
+    "x": 430,
+    "y": 450,
+    "wires": [
+      [
+        "fn-build-env-log"
+      ]
+    ]
+  },
+  {
     "id": "mqtt-in-rfid-invalid",
     "type": "mqtt in",
     "z": "tab-email",
@@ -473,6 +538,7 @@
     "qos": "1",
     "datatype": "utf8",
     "broker": "broker-hivemq",
+    "inputs": 0,
     "x": 160,
     "y": 100,
     "wires": [
@@ -524,10 +590,6 @@
     "tls": true,
     "name": "Gmail SMTP",
     "dname": "Email Canh Bao SafeHome",
-    "credentials": {
-      "userid": "YOUR_GMAIL@gmail.com",
-      "password": "YOUR_GMAIL_APP_PASSWORD"
-    },
     "x": 800,
     "y": 100,
     "wires": []
@@ -548,46 +610,15 @@
     ]
   },
   {
-    "id": "inject-fake-dht",
-    "type": "inject",
-    "z": "tab-supabase",
-    "name": "TEST: Gia lap DHT data",
-    "once": false,
-    "payload": "fake",
-    "payloadType": "str",
-    "x": 200,
-    "y": 450,
-    "wires": [
-      [
-        "fn-fake-dht"
-      ]
-    ]
-  },
-  {
-    "id": "fn-fake-dht",
-    "type": "function",
-    "z": "tab-supabase",
-    "name": "Set fake temp+hum vao context",
-    "func": "flow.set('latestTemp', 32.5);\nflow.set('latestHum',  75.0);\nflow.set('latestFan',  true);\nnode.warn('Da set: Temp=32.5, Hum=75, Fan=ON');\nreturn msg;",
-    "outputs": 1,
-    "x": 430,
-    "y": 450,
-    "wires": [
-      [
-        "fn-build-env-log"
-      ]
-    ]
-  },
-  {
     "id": "btn-manual-email",
-    "type": "ui_button",
+    "type": "ui-button",
     "z": "tab-email",
+    "group": "group-notif-2",
     "name": "Test Gui Email",
-    "group": "group-notifications",
+    "label": "GUI EMAIL THU CONG",
     "order": 3,
     "width": 0,
     "height": 0,
-    "label": "GUI EMAIL THU CONG",
     "color": "white",
     "bgcolor": "#e67e22",
     "icon": "email",
@@ -659,22 +690,210 @@
     "wires": []
   },
   {
-    "id": "8d4792cf5dad1653",
-    "type": "tab",
-    "label": "Flow 2",
-    "disabled": false,
-    "info": "",
-    "env": []
+    "id": "btn-door-open",
+    "type": "ui-button",
+    "z": "flow-safehome",
+    "group": "group-door-2",
+    "name": "Mo Cua",
+    "label": "MO CUA",
+    "order": 1,
+    "width": "3",
+    "height": "1",
+    "color": "white",
+    "bgcolor": "#27ae60",
+    "icon": "lock_open",
+    "payload": "OPEN",
+    "payloadType": "str",
+    "topic": "safehome/servo/set",
+    "topicType": "str",
+    "x": 160,
+    "y": 80,
+    "wires": [
+      [
+        "mqtt-out-door"
+      ]
+    ]
+  },
+  {
+    "id": "btn-door-close",
+    "type": "ui-button",
+    "z": "flow-safehome",
+    "group": "group-door-2",
+    "name": "Dong Cua",
+    "label": "DONG CUA",
+    "order": 2,
+    "width": "3",
+    "height": "1",
+    "color": "white",
+    "bgcolor": "#e74c3c",
+    "icon": "lock",
+    "payload": "CLOSE",
+    "payloadType": "str",
+    "topic": "safehome/servo/set",
+    "topicType": "str",
+    "x": 160,
+    "y": 140,
+    "wires": [
+      [
+        "mqtt-out-door"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt-out-door",
+    "type": "mqtt out",
+    "z": "flow-safehome",
+    "name": "Servo Command",
+    "topic": "safehome/servo/set",
+    "qos": "1",
+    "retain": "false",
+    "broker": "broker-hivemq",
+    "x": 380,
+    "y": 110,
+    "wires": []
+  },
+  {
+    "id": "text-door-state",
+    "type": "ui-text",
+    "z": "flow-safehome",
+    "group": "group-door-2",
+    "order": 3,
+    "width": "6",
+    "height": "1",
+    "label": "Trang thai cua:",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "x": 380,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "mqtt-in-door-state",
+    "type": "mqtt in",
+    "z": "flow-safehome",
+    "name": "Door State",
+    "topic": "safehome/servo/state",
+    "qos": "1",
+    "datatype": "utf8",
+    "broker": "broker-hivemq",
+    "inputs": 0,
+    "x": 160,
+    "y": 200,
+    "wires": [
+      [
+        "text-door-state"
+      ]
+    ]
+  },
+  {
+    "id": "switch-fan",
+    "type": "ui-switch",
+    "z": "flow-safehome",
+    "name": "Quat Bat/Tat",
+    "label": "Quat",
+    "group": "group-fan-2",
+    "order": 1,
+    "topic": "safehome/fan/set",
+    "topicType": "str",
+    "onvalue": "ON",
+    "onvalueType": "str",
+    "offvalue": "OFF",
+    "offvalueType": "str",
+    "x": 160,
+    "y": 460,
+    "wires": [
+      [
+        "mqtt-out-fan"
+      ]
+    ]
+  },
+  {
+    "id": "mqtt-out-fan",
+    "type": "mqtt out",
+    "z": "flow-safehome",
+    "name": "Fan Control",
+    "topic": "safehome/fan/set",
+    "qos": "0",
+    "retain": "false",
+    "broker": "broker-hivemq",
+    "x": 380,
+    "y": 460,
+    "wires": []
+  },
+  {
+    "id": "mqtt-in-fan-state",
+    "type": "mqtt in",
+    "z": "flow-safehome",
+    "name": "Fan State",
+    "topic": "safehome/fan/state",
+    "qos": "0",
+    "datatype": "utf8",
+    "broker": "broker-hivemq",
+    "inputs": 0,
+    "x": 160,
+    "y": 520,
+    "wires": [
+      [
+        "switch-fan"
+      ]
+    ]
+  },
+  {
+    "id": "switch-email-notify",
+    "type": "ui-switch",
+    "z": "flow-safehome",
+    "name": "Email Notifications",
+    "label": "Thong bao Email",
+    "group": "group-notif-2",
+    "order": 1,
+    "onvalue": true,
+    "onvalueType": "bool",
+    "offvalue": false,
+    "offvalueType": "bool",
+    "x": 160,
+    "y": 620,
+    "wires": [
+      [
+        "fn-set-email-flag"
+      ]
+    ]
+  },
+  {
+    "id": "fn-set-email-flag",
+    "type": "function",
+    "z": "flow-safehome",
+    "name": "Set Email Flag",
+    "func": "flow.set('emailEnabled', msg.payload);\nmsg.payload = msg.payload ? 'Email: BAT' : 'Email: TAT';\nreturn msg;",
+    "outputs": 1,
+    "x": 380,
+    "y": 620,
+    "wires": [
+      [
+        "text-email-status"
+      ]
+    ]
+  },
+  {
+    "id": "text-email-status",
+    "type": "ui-text",
+    "z": "flow-safehome",
+    "group": "group-notif-2",
+    "order": 2,
+    "label": "Trang thai:",
+    "format": "{{msg.payload}}",
+    "x": 580,
+    "y": 620,
+    "wires": []
   },
   {
     "id": "e32fa16615b765d2",
     "type": "function",
     "z": "8d4792cf5dad1653",
     "name": "function 3",
-    "func": "let userText = msg.payload;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\n            \"text\": userText\n        }]\n    }]\n};\n\nmsg.url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=GEMINI_API_KEY\";\n\nreturn msg;",
+    "func": "let userText = msg.payload;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\n            \"text\": userText\n        }]\n    }]\n};\n\nmsg.url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=GEMINI_API_KEY=YOUR_GEMINI_API_KEY\n\";\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
-    "noerr": 0,
+    "noerr": 2,
     "initialize": "",
     "finalize": "",
     "libs": [],
@@ -755,111 +974,6 @@
         "e32fa16615b765d2"
       ]
     ]
-  },
-  {
-    "id": "802dbdbb1171fb0f",
-    "type": "ui-group",
-    "name": "Chatbot",
-    "page": "4c68826e1ed2155e",
-    "width": 6,
-    "height": 1,
-    "order": 1,
-    "showTitle": true,
-    "className": "",
-    "visible": "true",
-    "disabled": "false",
-    "groupType": "default"
-  },
-  {
-    "id": "4c68826e1ed2155e",
-    "type": "ui-page",
-    "name": "2",
-    "ui": "c1fa52fe677cc1d1",
-    "path": "/page3",
-    "icon": "home",
-    "layout": "grid",
-    "theme": "f159aa0cf13dfb1f",
-    "breakpoints": [
-      {
-        "name": "Default",
-        "px": "0",
-        "cols": "3"
-      },
-      {
-        "name": "Tablet",
-        "px": "576",
-        "cols": "6"
-      },
-      {
-        "name": "Small Desktop",
-        "px": "768",
-        "cols": "9"
-      },
-      {
-        "name": "Desktop",
-        "px": "1024",
-        "cols": "12"
-      }
-    ],
-    "order": 1,
-    "className": "",
-    "visible": "true",
-    "disabled": "false"
-  },
-  {
-    "id": "c1fa52fe677cc1d1",
-    "type": "ui-base",
-    "name": "My Dashboard",
-    "path": "/dashboard",
-    "appIcon": "",
-    "includeClientData": true,
-    "acceptsClientConfig": [
-      "ui-notification",
-      "ui-control"
-    ],
-    "showPathInSidebar": false,
-    "headerContent": "page",
-    "navigationStyle": "default",
-    "titleBarStyle": "default",
-    "showReconnectNotification": true,
-    "notificationDisplayTime": 1,
-    "showDisconnectNotification": true,
-    "allowInstall": false
-  },
-  {
-    "id": "f159aa0cf13dfb1f",
-    "type": "ui-theme",
-    "name": "Default Theme",
-    "colors": {
-      "surface": "#ffffff",
-      "primary": "#0094CE",
-      "bgPage": "#eeeeee",
-      "groupBg": "#ffffff",
-      "groupOutline": "#cccccc"
-    },
-    "sizes": {
-      "density": "default",
-      "pagePadding": "12px",
-      "groupGap": "12px",
-      "groupBorderRadius": "4px",
-      "widgetGap": "12px"
-    }
-  },
-  {
-    "id": "934b907f9a8d4dd5",
-    "type": "global-config",
-    "env": [],
-    "modules": {
-      "@flowfuse/node-red-dashboard": "1.30.2"
-    }
-  },
-  {
-    "id": "a25cc6e926258f9f",
-    "type": "tab",
-    "label": "Flow 3",
-    "disabled": false,
-    "info": "",
-    "env": []
   },
   {
     "id": "c300d5c5c451ef4f",
@@ -1085,72 +1199,6 @@
     ]
   },
   {
-    "id": "b31a264fc8d83f12",
-    "type": "ui-group",
-    "name": "humi_temp_chart",
-    "page": "0d1f242ad047c298",
-    "width": "12",
-    "height": 1,
-    "order": 1,
-    "showTitle": true,
-    "className": "",
-    "visible": "true",
-    "disabled": "false",
-    "groupType": "default"
-  },
-  {
-    "id": "0d1f242ad047c298",
-    "type": "ui-page",
-    "name": "3",
-    "ui": "c1fa52fe677cc1d1",
-    "path": "/page4",
-    "icon": "home",
-    "layout": "grid",
-    "theme": "f159aa0cf13dfb1f",
-    "breakpoints": [
-      {
-        "name": "Default",
-        "px": "0",
-        "cols": "3"
-      },
-      {
-        "name": "Tablet",
-        "px": "576",
-        "cols": "6"
-      },
-      {
-        "name": "Small Desktop",
-        "px": "768",
-        "cols": "9"
-      },
-      {
-        "name": "Desktop",
-        "px": "1024",
-        "cols": "12"
-      }
-    ],
-    "order": 1,
-    "className": "",
-    "visible": "true",
-    "disabled": "false"
-  },
-  {
-    "id": "8aa98b321a51993c",
-    "type": "global-config",
-    "env": [],
-    "modules": {
-      "@flowfuse/node-red-dashboard": "1.30.2"
-    }
-  },
-  {
-    "id": "a26aa76f5d84d03a",
-    "type": "tab",
-    "label": "Flow 4",
-    "disabled": false,
-    "info": "",
-    "env": []
-  },
-  {
     "id": "71d13ecaccd80988",
     "type": "http in",
     "z": "a26aa76f5d84d03a",
@@ -1223,7 +1271,7 @@
     "type": "function",
     "z": "a26aa76f5d84d03a",
     "name": "function 6",
-    "func": "const { email, password } = msg.payload || {};\n\nif (!email || !password) {\n    msg.statusCode = 400;\n    msg.payload = {\n        ok: false,\n        message: \"Vui lòng nhập email và mật khẩu.\"\n    };\n    return [null, msg]; // đi thẳng tới http response\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") +\n    \"/auth/v1/token?grant_type=password\";\n\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = { email, password };\n\nreturn [msg, null]; // gửi sang http request",
+    "func": "const { email, password } = msg.payload || {};\n\nif (!email || !password) {\n    msg.statusCode = 400;\n    msg.payload = {\n        ok: false,\n        message: \"Vui lòng nhập email và mật khẩu.\"\n    };\n    return [null, msg]; // đi thẳng tới http response\n}\n\nmsg.method = \"POST\";\nmsg.url = (env.get(\"SUPABASE_URL\") || \"https://wfkesifcfgajgymipqcd.supabase.co\") +\n    \"/auth/v1/token?grant_type=password\";\n\nmsg.headers = {\n    \"apikey\": (env.get(\"SUPABASE_ANON_KEY\") || \"sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY\"),\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = { email, password };\n\nreturn [msg, null]; // gửi sang http request",
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
@@ -1246,7 +1294,7 @@
     "type": "function",
     "z": "a26aa76f5d84d03a",
     "name": "function 7",
-    "func": "const { full_name, email, password, re_password } = msg.payload || {};\n\nif (!email || !password || !re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Vui lòng nhập đủ thông tin.\" };\n    return [null, msg];\n}\n\nif (password !== re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu nhập lại không khớp.\" };\n    return [null, msg];\n}\n\nif (password.length < 6) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu phải có ít nhất 6 ký tự.\" };\n    return [null, msg];\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") + \"/auth/v1/signup\";\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\nmsg.payload = {\n    email,\n    password,\n    data: { full_name }\n};\n\nreturn [msg, null];",
+    "func": "const { full_name, email, password, re_password } = msg.payload || {};\n\nif (!email || !password || !re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Vui lòng nhập đủ thông tin.\" };\n    return [null, msg];\n}\n\nif (password !== re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu nhập lại không khớp.\" };\n    return [null, msg];\n}\n\nif (password.length < 6) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu phải có ít nhất 6 ký tự.\" };\n    return [null, msg];\n}\n\nmsg.method = \"POST\";\nmsg.url = (env.get(\"SUPABASE_URL\") || \"https://wfkesifcfgajgymipqcd.supabase.co\") + \"/auth/v1/signup\";\nmsg.headers = {\n    \"apikey\": (env.get(\"SUPABASE_ANON_KEY\") || \"sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY\"),\n    \"Content-Type\": \"application/json\"\n};\nmsg.payload = {\n    email,\n    password,\n    data: { full_name }\n};\n\nreturn [msg, null];",
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
@@ -1397,63 +1445,5 @@
     "wires": [
       []
     ]
-  },
-  {
-    "id": "1e2bbc148d9e8140",
-    "type": "ui-group",
-    "name": "ui-group",
-    "page": "3f98f7d479b2b8f2",
-    "width": "12",
-    "height": 1,
-    "order": 1,
-    "showTitle": true,
-    "className": "",
-    "visible": "true",
-    "disabled": "false",
-    "groupType": "default"
-  },
-  {
-    "id": "3f98f7d479b2b8f2",
-    "type": "ui-page",
-    "name": "ui-page",
-    "ui": "c1fa52fe677cc1d1",
-    "path": "/page5",
-    "icon": "home",
-    "layout": "grid",
-    "theme": "f159aa0cf13dfb1f",
-    "breakpoints": [
-      {
-        "name": "Default",
-        "px": "0",
-        "cols": "3"
-      },
-      {
-        "name": "Tablet",
-        "px": "576",
-        "cols": "6"
-      },
-      {
-        "name": "Small Desktop",
-        "px": "768",
-        "cols": "9"
-      },
-      {
-        "name": "Desktop",
-        "px": "1024",
-        "cols": "12"
-      }
-    ],
-    "order": 1,
-    "className": "",
-    "visible": "true",
-    "disabled": "false"
-  },
-  {
-    "id": "88253e6c17ccae9d",
-    "type": "global-config",
-    "env": [],
-    "modules": {
-      "@flowfuse/node-red-dashboard": "1.30.2"
-    }
   }
 ]

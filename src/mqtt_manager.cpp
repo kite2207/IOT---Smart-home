@@ -5,6 +5,7 @@
 #include "config.h"
 #include "display.h"
 #include "fan_ctrl.h"
+#include "servo_ctrl.h"
 
 SemaphoreHandle_t mqttMutex = nullptr;
 
@@ -32,7 +33,7 @@ namespace {
             }
         }
 
-        // Lệnh điều khiển quạt thủ công
+        // Lenh dieu khien quat thu cong
         if (strcmp(topic, FAN_COMMAND) == 0) {
             if (message == "ON") {
                 setFan(true);
@@ -42,6 +43,25 @@ namespace {
                 setFan(false);
                 mqttPublish(FAN_STATE_TOPIC, "OFF", true);
                 Serial.println("[FAN] Thu cong: TAT");
+            }
+        }
+
+        // Lenh dieu khien servo (ID 2 - mo/dong cua)
+        // Node-RED co the gui: goc so (vd "90") hoac "OPEN"/"CLOSE"
+        if (strcmp(topic, SERVO_COMMAND) == 0) {
+            if (message == "OPEN") {
+                setServoAngle(SERVO_OPEN_ANGLE);
+                Serial.println("[SERVO] Lenh: MO CUA (90 do)");
+            } else if (message == "CLOSE") {
+                setServoAngle(SERVO_CLOSE_ANGLE);
+                Serial.println("[SERVO] Lenh: DONG CUA (0 do)");
+            } else {
+                // Thu parse so nguyen (goc tuy chinh 0-180)
+                int angle = message.toInt();
+                if (angle >= 0 && angle <= 180) {
+                    setServoAngle((uint8_t)angle);
+                    Serial.printf("[SERVO] Lenh: Goc = %d do\n", angle);
+                }
             }
         }
     }
@@ -57,6 +77,7 @@ void connectMqtt() {
             printDisplayLine(0," Thanh cong!");
             mqttClient.subscribe(LED_COMMAND);
             mqttClient.subscribe(FAN_COMMAND);
+            mqttClient.subscribe(SERVO_COMMAND);  // ID 2: Dieu khien cua
         } else {
             printDisplayLine(0," That bai");
             delay(5000);

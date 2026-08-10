@@ -1,20 +1,20 @@
 // dht_sensor.cpp
-// Đọc cảm biến DHT22 (Wokwi) / DHT11 (phần cứng thật) định kỳ,
-// tự động điều khiển quạt làm mát khi vượt ngưỡng nhiệt độ / độ ẩm.
+// Doc cam bien DHT22 (Wokwi) / DHT11 (phan cung that) dinh ky,
+// tu dong dieu khien quat lam mat khi vuot nguong nhiet do / do am.
 //
-// Kiến trúc:
-//   - dhtTask() chạy trên Core 1 cùng với Arduino loop() và MQTT,
-//     tránh race condition với PubSubClient.
-//   - Mỗi DHT_READ_INTERVAL_MS đọc sensor một lần.
-//   - Nếu temp >= TEMP_THRESHOLD HOẶC humidity >= HUMIDITY_THRESHOLD
-//     -> gọi setFan(true) tự động.
-//   - Kết quả publish lên MQTT và lưu vào biến shared (mutex-protected).
+// Kien truc:
+//   - dhtTask() chay tren Core 1 cung voi Arduino loop() va MQTT,
+//     tranh race condition voi PubSubClient.
+//   - Moi DHT_READ_INTERVAL_MS doc sensor mot lan.
+//   - Neu temp >= TEMP_THRESHOLD HOAC humidity >= HUMIDITY_THRESHOLD
+//     -> goi setFan(true) tu dong.
+//   - Ket qua publish len MQTT; Node-RED se ghi Supabase (khong qua ESP32).
 
 #include "dht_sensor.h"
 #include "config.h"
 #include "fan_ctrl.h"
 #include "mqtt_manager.h"
-
+#include "supabase_client.h"
 #include <Arduino.h>
 #include <DHT.h>                    // Adafruit DHT sensor library
 #include <freertos/FreeRTOS.h>
@@ -31,7 +31,7 @@ namespace {
 
     // FreeRTOS Task: Core 1, priority 1
     void dhtTask(void* /*pvParameters*/) {
-        // Đợi WiFi + MQTT kết nối xong trước khi bắt đầu đọc
+        // Doi WiFi + MQTT ket noi xong truoc khi bat dau doc
         vTaskDelay(pdMS_TO_TICKS(5000));
 
         for (;;) {
@@ -39,18 +39,19 @@ namespace {
             float hum  = dht.readHumidity();
 
             if (!isnan(temp) && !isnan(hum)) {
-                // Cập nhật biến shared
+                // Cap nhat bien shared
                 if (xSemaphoreTake(readingsMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
                     latestTemp     = temp;
                     latestHumidity = hum;
                     xSemaphoreGive(readingsMutex);
                 }
 
-                // Tự động bật/tắt quạt theo ngưỡng
+                // Tu dong bat/tat quat theo nguong
                 bool shouldFanOn = (temp >= TEMP_THRESHOLD) || (hum >= HUMIDITY_THRESHOLD);
                 setFan(shouldFanOn);
 
-                // Publish lên MQTT
+                // Publish len MQTT (real-time, moi lan doc)
+                // Node-RED se lang nghe cac topic nay va ghi Supabase
                 char buf[12];
 
                 snprintf(buf, sizeof(buf), "%.1f", temp);
@@ -63,6 +64,15 @@ namespace {
 
                 Serial.printf("[DHT] Nhiet do: %.1f C | Do am: %.1f %% | Quat: %s\n",
                               temp, hum, shouldFanOn ? "BAT" : "TAT");
+
+                // Gui du lieu len Supabase dinh ky
+                static uint32_t lastSupabaseTime = 0;
+                if (millis() - lastSupabaseTime >= SUPABASE_DB_INTERVAL_MS) {
+                    lastSupabaseTime = millis();
+                    supabaseInsert("temperature", temp, nullptr, "°C");
+                    supabaseInsert("humidity", hum, nullptr, "%");
+                    supabaseInsert("fan", NAN, shouldFanOn ? "ON" : "OFF", nullptr);
+                }
             } else {
                 Serial.println("[DHT] Loi doc cam bien! Kiem tra ket noi day.");
             }
@@ -77,12 +87,12 @@ namespace {
 void setupDht() {
     readingsMutex = xSemaphoreCreateMutex();
 
-    dht.begin();  // Adafruit DHT: không cần truyền type vào đây vì đã khai báo lúc khởi tạo
+    dht.begin();
 
     xTaskCreatePinnedToCore(
         dhtTask,
         "DhtTask",
-        3072,    // stack lớn hơn servo vì dùng printf
+        8192,    // Tang len 8192 vi HTTPS/TLS ngot nhieu RAM
         nullptr,
         1,
         nullptr,

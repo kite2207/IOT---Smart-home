@@ -1,4 +1,4 @@
-﻿-- =====================================================
+-- =====================================================
 -- SafeHome IoT - Supabase Database Schema
 -- Da tao trong Supabase project: wfkesifcfgajgymipqcd
 -- =====================================================
@@ -36,6 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_env_log_time ON environment_log (recorded_at);
 CREATE TABLE IF NOT EXISTS profiles (
   id           UUID PRIMARY KEY REFERENCES auth.users(id),
   display_name TEXT,
+  email        TEXT,
   role         TEXT DEFAULT 'member'   -- 'owner' / 'member'
 );
 

@@ -28,3 +28,12 @@ bool supabaseInsert(const char* sensorType,
                     float       valueNum,
                     const char* valueText,
                     const char* unit);
+
+/**
+ * @brief Truy vấn dữ liệu từ Supabase REST API (GET).
+ *
+ * @param table Tên bảng (ví dụ: "sensor_logs")
+ * @param query Chuỗi query param (ví dụ: "sensor_type=eq.fan&order=created_at.desc&limit=1")
+ * @return String Kết quả JSON trả về từ server, hoặc rỗng nếu lỗi.
+ */
+String supabaseQuery(const char* table, const char* query);
