@@ -4,7 +4,7 @@
 constexpr uint8_t LED_PIN = 2;
 constexpr uint8_t LCD_SDA_PIN = 21;
 constexpr uint8_t LCD_SCL_PIN = 22;
-constexpr uint8_t LCD_I2C_ADDRESS = 0x27;
+constexpr uint8_t LCD_I2C_ADDRESS = 0x3F;
 constexpr uint8_t LCD_COLUMNS = 16;
 constexpr uint8_t LCD_ROWS = 2;
 
@@ -20,11 +20,11 @@ constexpr uint8_t ultrasonic_trigPin = 26;
 constexpr uint8_t ultrasonic_echoPin = 27;
 
 // Optional serial diagnostics
-constexpr bool DEBUG_SERIAL = false;
+constexpr bool DEBUG_SERIAL = true;
 
 // Wi-Fi
-const char* const WIFI_SSID = "Wokwi-GUEST";
-const char* const WIFI_PASSWORD = "";
+const char* const WIFI_SSID = "canuacamai";
+const char* const WIFI_PASSWORD = "cangcacangphe";
 
 // MQTT
 const char* const MQTT_BROKER = "2cdbc656a97a4c3daad987b08d8a473e.s1.eu.hivemq.cloud";
@@ -36,7 +36,7 @@ const char* const MQTT_PASSWORD = "kkn!@#1236";
 const char* const LED_COMMAND = "safehome/led/set";
 const char* const LED_STATE = "safehome/led/state";
 
-// LCD
+// LCD  
 const char* const LCD_COMMAND = "safehome/lcd/display";
 
 // RFID

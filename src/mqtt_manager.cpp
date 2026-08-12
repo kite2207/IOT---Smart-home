@@ -13,8 +13,19 @@ namespace {
     PubSubClient mqttClient(espClient);
 
     void mqttCallback(char* topic, byte* payload, unsigned int length) {
-        Serial.print("\n[MQTT] New message from topic: ");
+        Serial.println();
+        Serial.println("========== MQTT RECEIVED ==========");
+        Serial.print("[MQTT RX] Topic: ");
         Serial.println(topic);
+
+        Serial.print("[MQTT RX] Length: ");
+        Serial.print(length);
+        Serial.println(" bytes");
+
+        Serial.print("[MQTT RX] Payload: ");
+        Serial.write(payload, length);
+        Serial.println();
+        Serial.println("===================================");
 
         // Chuyển đổi payload (mảng byte) thành String để dễ xử lý
         String message;
@@ -22,9 +33,6 @@ namespace {
         for (unsigned int i = 0; i < length; i++) {
             message += static_cast<char>(payload[i]);
         }
-
-        Serial.print("[MQTT] Payload: ");
-        Serial.println(message);
 
         printDisplayLine(1, "[MQTT] New msg");
 
@@ -53,8 +61,11 @@ namespace {
             }
 
             // printDisplayLine nhận chuỗi C; c_str() hợp lệ trong phạm vi callback.
-            printDisplayLine(0, message.c_str());
-            Serial.println("[LCD] Message displayed");
+            if (printDisplayLine(0, message.c_str())) {
+                Serial.println("[LCD] Message displayed");
+            } else {
+                Serial.println("[LCD] Write failed: LCD was not detected during startup");
+            }
         }
     }
 }
