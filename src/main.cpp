@@ -6,7 +6,6 @@
 #include "fan_ctrl.h"
 #include "wifi_manager.h"
 #include "ultrasonic.h"
-// KHONG dung supabase_client.h - Supabase duoc xu ly boi Node-RED
 #include "servo_ctrl.h"         // <<< Servo SG90 (ID 2)
 
 const int ultrasonic_trigPin = 26;

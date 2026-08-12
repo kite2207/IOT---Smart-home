@@ -14,7 +14,6 @@
 #include "config.h"
 #include "fan_ctrl.h"
 #include "mqtt_manager.h"
-#include "supabase_client.h"
 #include <Arduino.h>
 #include <DHT.h>                    // Adafruit DHT sensor library
 #include <freertos/FreeRTOS.h>
@@ -64,15 +63,6 @@ namespace {
 
                 Serial.printf("[DHT] Nhiet do: %.1f C | Do am: %.1f %% | Quat: %s\n",
                               temp, hum, shouldFanOn ? "BAT" : "TAT");
-
-                // Gui du lieu len Supabase dinh ky
-                static uint32_t lastSupabaseTime = 0;
-                if (millis() - lastSupabaseTime >= SUPABASE_DB_INTERVAL_MS) {
-                    lastSupabaseTime = millis();
-                    supabaseInsert("temperature", temp, nullptr, "°C");
-                    supabaseInsert("humidity", hum, nullptr, "%");
-                    supabaseInsert("fan", NAN, shouldFanOn ? "ON" : "OFF", nullptr);
-                }
             } else {
                 Serial.println("[DHT] Loi doc cam bien! Kiem tra ket noi day.");
             }

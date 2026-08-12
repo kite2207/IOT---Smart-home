@@ -58,13 +58,3 @@ const char* const FAN_STATE_TOPIC = "safehome/fan/state";
 const char* const SERVO_COMMAND    = "safehome/servo/set";
 const char* const SERVO_STATE_TOPIC = "safehome/servo/state";
 
-// =============================================
-// Supabase REST API
-// Lấy từ: Dashboard → Project Settings → API
-// =============================================
-const char* const SUPABASE_PROJECT_ID = "wfkesifcfgajgymipqcd";
-const char* const SUPABASE_ANON_KEY   = "sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY";
-
-// Chu kỳ gửi dữ liệu lên Supabase (ms)
-// Mặc định 30s: không quá nhanh, tránh rate limit free tier
-constexpr uint32_t SUPABASE_DB_INTERVAL_MS = 30000;

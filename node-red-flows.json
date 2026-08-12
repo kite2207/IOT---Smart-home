@@ -501,7 +501,7 @@
     "type": "function",
     "z": "tab-email",
     "name": "Format Email & Log",
-    "func": "var ownerEmail = 'YOUR_EMAIL@gmail.com';\nif (Array.isArray(msg.payload) && msg.payload.length > 0 && msg.payload[0].email) {\n    ownerEmail = msg.payload[0].email;\n}\n\nvar data = msg._rfid_data || {};\nvar now  = new Date().toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});\nvar emailTopic = '[SafeHome] CANH BAO: The RFID khong hop le!';\nvar emailBody = 'CANH BAO XAM NHAP SafeHome\\n'\n            + '========================\\n'\n            + 'Thoi gian : ' + now + '\\n'\n            + 'UID the   : ' + (data.uid || 'UNKNOWN') + '\\n'\n            + 'Ket qua   : DENIED - Khong duoc phep truy cap\\n';\n\nvar emailMsg = {\n    to: ownerEmail,\n    topic: emailTopic,\n    payload: emailBody\n};\n\nvar supaUrl = flow.get('SUPABASE_URL') || 'https://wfkesifcfgajgymipqcd.supabase.co';\nvar anonKey = flow.get('SUPABASE_ANON_KEY') || 'sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY';\n\nvar notifMsg = {\n    url: supaUrl + '/rest/v1/notifications',\n    headers: {\n        'apikey': anonKey,\n        'Authorization': 'Bearer ' + anonKey,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n    },\n    payload: {\n        event_type: 'rfid_invalid',\n        message: 'The RFID khong hop le truy cap vao luc ' + now + ' (UID: ' + (data.uid || 'UNKNOWN') + ')'\n    }\n};\n\nreturn [emailMsg, notifMsg];",
+    "func": "var ownerEmail = 'YOUR_EMAIL@gmail.com';\nif (Array.isArray(msg.payload) && msg.payload.length > 0 && msg.payload[0].email) {\n    ownerEmail = msg.payload[0].email;\n}\n\nvar data = msg._rfid_data || {};\nvar now  = new Date().toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'});\nvar emailTopic = '[SafeHome] CANH BAO: The RFID khong hop le!';\nvar emailBody = 'CANH BAO XAM NHAP SafeHome\\n'\n            + '========================\\n'\n            + 'Thoi gian : ' + now + '\\n'\n            + 'UID the   : ' + (data.uid || 'UNKNOWN') + '\\n'\n            + 'Ket qua   : DENIED - Khong duoc phep truy cap\\n';\n\n// Lay thong tin SMTP tu context\nvar smtpUser = global.get('smtp_user') || flow.get('smtp_user');\nvar smtpPass = global.get('smtp_pass') || flow.get('smtp_pass');\n\nif (!smtpUser || !smtpPass) {\n    node.warn(\"Chua cau hinh Email Gui (SMTP). Vui long cau hinh tren Dashboard.\");\n    return [null, null];\n}\n\nvar emailMsg = {\n    payload: JSON.stringify({\n        smtp_user: smtpUser,\n        smtp_pass: smtpPass,\n        to: ownerEmail,\n        subject: emailTopic,\n        body: emailBody\n    })\n};\n\nvar supaUrl = flow.get('SUPABASE_URL') || 'https://wfkesifcfgajgymipqcd.supabase.co';\nvar anonKey = flow.get('SUPABASE_ANON_KEY') || 'sb_publishable_KDECMGj5-HIlQGGUUrYdHg_7b-VojuY';\n\nvar notifMsg = {\n    url: supaUrl + '/rest/v1/notifications',\n    headers: {\n        'apikey': anonKey,\n        'Authorization': 'Bearer ' + anonKey,\n        'Content-Type': 'application/json',\n        'Prefer': 'return=minimal'\n    },\n    payload: {\n        event_type: 'rfid_invalid',\n        message: 'The RFID khong hop le truy cap vao luc ' + now + ' (UID: ' + (data.uid || 'UNKNOWN') + ')'\n    }\n};\n\nreturn [emailMsg, notifMsg];",
     "outputs": 2,
     "x": 580,
     "y": 100,
@@ -516,21 +516,18 @@
   },
   {
     "id": "email-out",
-    "type": "e-mail",
+    "type": "exec",
     "z": "tab-email",
-    "server": "smtp.gmail.com",
-    "port": "465",
-    "secure": true,
-    "tls": true,
-    "name": "Gmail SMTP",
-    "dname": "Email Canh Bao SafeHome",
-    "credentials": {
-      "userid": "YOUR_GMAIL@gmail.com",
-      "password": "YOUR_GMAIL_APP_PASSWORD"
-    },
+    "name": "Send Email (Python)",
     "x": 800,
     "y": 100,
-    "wires": []
+    "wires": [],
+    "command": "python send_email_helper.py",
+    "addpay": true,
+    "append": "",
+    "useSpawn": "false",
+    "timer": "",
+    "oldrc": false
   },
   {
     "id": "inject-test-email",
@@ -715,7 +712,7 @@
     "type": "function",
     "z": "8d4792cf5dad1653",
     "name": "function 4",
-    "func": "// 1. Kiểm tra msg.payload có tồn tại không trước, tránh crash khi mất mạng/timeout\nif (!msg.payload) {\n    msg.payload = \"Hệ thống AI đang gặp sự cố: không nhận được phản hồi.\";\n    return msg;\n}\n\n// 2. Bắt riêng lỗi 429 (Quá tải giới hạn API của Google)\nif (msg.statusCode == 429 || (msg.payload && msg.payload.error && msg.payload.error.code == 429)) {\n    msg.payload = \"Trợ lý đang bận xử lý do hệ thống quá tải, vui lòng thử lại sau 1 phút nhé.\";\n    return msg;\n}\n\n// 3. Trích xuất dữ liệu thành công nếu cấu trúc trả về đúng chuẩn của Gemini\nif (msg.payload.candidates && msg.payload.candidates.length > 0) {\n    msg.payload = msg.payload.candidates[0].content.parts[0].text;\n} else {\n    // 4. Bắt các lỗi API khác từ Google (VD: 400 sai định dạng, 403 sai key, 404 sai model...)\n    let errorDetail = msg.payload.error ? msg.payload.error.message : \"Lỗi không xác định\";\n    msg.payload = \"Hệ thống AI đang gặp sự cố: \" + errorDetail;\n}\n\nreturn msg;",
+    "func": "// 1. Ki\u1ec3m tra msg.payload c\u00f3 t\u1ed3n t\u1ea1i kh\u00f4ng tr\u01b0\u1edbc, tr\u00e1nh crash khi m\u1ea5t m\u1ea1ng/timeout\nif (!msg.payload) {\n    msg.payload = \"H\u1ec7 th\u1ed1ng AI \u0111ang g\u1eb7p s\u1ef1 c\u1ed1: kh\u00f4ng nh\u1eadn \u0111\u01b0\u1ee3c ph\u1ea3n h\u1ed3i.\";\n    return msg;\n}\n\n// 2. B\u1eaft ri\u00eang l\u1ed7i 429 (Qu\u00e1 t\u1ea3i gi\u1edbi h\u1ea1n API c\u1ee7a Google)\nif (msg.statusCode == 429 || (msg.payload && msg.payload.error && msg.payload.error.code == 429)) {\n    msg.payload = \"Tr\u1ee3 l\u00fd \u0111ang b\u1eadn x\u1eed l\u00fd do h\u1ec7 th\u1ed1ng qu\u00e1 t\u1ea3i, vui l\u00f2ng th\u1eed l\u1ea1i sau 1 ph\u00fat nh\u00e9.\";\n    return msg;\n}\n\n// 3. Tr\u00edch xu\u1ea5t d\u1eef li\u1ec7u th\u00e0nh c\u00f4ng n\u1ebfu c\u1ea5u tr\u00fac tr\u1ea3 v\u1ec1 \u0111\u00fang chu\u1ea9n c\u1ee7a Gemini\nif (msg.payload.candidates && msg.payload.candidates.length > 0) {\n    msg.payload = msg.payload.candidates[0].content.parts[0].text;\n} else {\n    // 4. B\u1eaft c\u00e1c l\u1ed7i API kh\u00e1c t\u1eeb Google (VD: 400 sai \u0111\u1ecbnh d\u1ea1ng, 403 sai key, 404 sai model...)\n    let errorDetail = msg.payload.error ? msg.payload.error.message : \"L\u1ed7i kh\u00f4ng x\u00e1c \u0111\u1ecbnh\";\n    msg.payload = \"H\u1ec7 th\u1ed1ng AI \u0111ang g\u1eb7p s\u1ef1 c\u1ed1: \" + errorDetail;\n}\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -742,7 +739,7 @@
     "width": 0,
     "height": 0,
     "head": "",
-    "format": "<template>\n  <div class=\"chat-widget\">\n    <button class=\"chat-toggle-btn\" @click=\"toggleChat\">\n      <span v-if=\"!isOpen\">💬</span>\n      <span v-else>✕</span>\n    </button>\n\n    <div class=\"chat-window\" v-if=\"isOpen\">\n      <div class=\"chat-header\">\n        <span>🤖 Trợ lý AI</span>\n        <button class=\"close-btn\" @click=\"toggleChat\">✕</button>\n      </div>\n\n      <div class=\"chat-body\" ref=\"chatBody\">\n        <div v-for=\"(m, i) in messages\" :key=\"i\" :class=\"['chat-msg', m.role]\">\n          <div class=\"bubble\">{{ m.text }}</div>\n        </div>\n\n        <div v-if=\"isTyping\" class=\"chat-msg bot\">\n          <div class=\"bubble typing\">\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"chat-footer\">\n        <input\n          v-model=\"inputText\"\n          @keyup.enter=\"sendMessage\"\n          placeholder=\"Nhập tin nhắn...\"\n          :disabled=\"isTyping\"\n        />\n        <button @click=\"sendMessage\" :disabled=\"isTyping || !inputText.trim()\">➤</button>\n      </div>\n    </div>\n  </div>\n\n  <div\n    style=\"position:fixed; top:0; left:0; background:yellow; z-index:99999; font-size:10px; max-width:300px; word-break:break-all;\">\n    DEBUG msg: {{ msg }}\n  </div>\n</template>\n\n<script>\n  export default {\n  data() {\n    return {\n      isOpen: false,\n      inputText: '',\n      isTyping: false,\n      messages: []\n    }\n  },\n\n  mounted() {\n    this.$socket.on('msg-input:' + this.id, (msg) => {\n      if (msg?.payload === undefined || msg.payload === null) return\n\n      const text = typeof msg.payload === 'string'\n        ? msg.payload\n        : JSON.stringify(msg.payload)\n\n      this.isTyping = false\n      this.messages.push({ role: 'bot', text })\n      this.$nextTick(() => this.scrollToBottom())\n    })\n  },\n\n  methods: {\n    toggleChat() {\n      this.isOpen = !this.isOpen\n      if (this.isOpen) this.$nextTick(() => this.scrollToBottom())\n    },\n\n    sendMessage() {\n      const text = this.inputText.trim()\n      if (!text || this.isTyping) return\n\n      this.messages.push({ role: 'user', text })\n      this.inputText = ''\n      this.isTyping = true\n      this.$nextTick(() => this.scrollToBottom())\n\n      this.send({ payload: text })\n    },\n\n    scrollToBottom() {\n      const el = this.$refs.chatBody\n      if (el) el.scrollTop = el.scrollHeight\n    }\n  }\n}\n</script>\n\n<style scoped>\n  .chat-widget {\n    position: fixed;\n    bottom: 20px;\n    right: 20px;\n    z-index: 9999;\n    font-family: Arial, sans-serif;\n  }\n\n  .chat-toggle-btn {\n    width: 56px;\n    height: 56px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    font-size: 24px;\n    cursor: pointer;\n    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);\n  }\n\n  .chat-window {\n    position: absolute;\n    bottom: 70px;\n    right: 0;\n    width: 320px;\n    height: 420px;\n    background: #fff;\n    border-radius: 10px;\n    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n  }\n\n  .chat-header {\n    background: #2b7de9;\n    color: #fff;\n    padding: 10px 12px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    font-weight: bold;\n  }\n\n  .close-btn {\n    background: none;\n    border: none;\n    color: #fff;\n    cursor: pointer;\n    font-size: 16px;\n  }\n\n  .chat-body {\n    flex: 1;\n    padding: 10px;\n    overflow-y: auto;\n    background: #f4f6f8;\n  }\n\n  .chat-msg {\n    display: flex;\n    margin-bottom: 8px;\n  }\n\n  .chat-msg.user {\n    justify-content: flex-end;\n  }\n\n  .chat-msg.bot {\n    justify-content: flex-start;\n  }\n\n  .bubble {\n    max-width: 75%;\n    padding: 8px 12px;\n    border-radius: 14px;\n    font-size: 14px;\n    line-height: 1.4;\n    word-wrap: break-word;\n  }\n\n  .chat-msg.user .bubble {\n    background: #2b7de9;\n    color: #fff;\n    border-bottom-right-radius: 2px;\n  }\n\n  .chat-msg.bot .bubble {\n    background: #e4e6eb;\n    color: #000;\n    border-bottom-left-radius: 2px;\n  }\n\n  .typing {\n    display: flex;\n    gap: 4px;\n    align-items: center;\n  }\n\n  .dot {\n    width: 6px;\n    height: 6px;\n    border-radius: 50%;\n    background: #888;\n    animation: blink 1.4s infinite both;\n  }\n\n  .dot:nth-child(2) {\n    animation-delay: 0.2s;\n  }\n\n  .dot:nth-child(3) {\n    animation-delay: 0.4s;\n  }\n\n  @keyframes blink {\n\n    0%,\n    80%,\n    100% {\n      opacity: 0.2;\n    }\n\n    40% {\n      opacity: 1;\n    }\n  }\n\n  .chat-footer {\n    display: flex;\n    padding: 8px;\n    border-top: 1px solid #ddd;\n    background: #fff;\n  }\n\n  .chat-footer input {\n    flex: 1;\n    border: 1px solid #ccc;\n    border-radius: 20px;\n    padding: 8px 12px;\n    outline: none;\n    font-size: 14px;\n  }\n\n  .chat-footer button {\n    margin-left: 6px;\n    width: 36px;\n    height: 36px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    cursor: pointer;\n  }\n\n  .chat-footer button:disabled {\n    background: #aac4ea;\n    cursor: not-allowed;\n  }\n</style>",
+    "format": "<template>\n  <div class=\"chat-widget\">\n    <button class=\"chat-toggle-btn\" @click=\"toggleChat\">\n      <span v-if=\"!isOpen\">\ud83d\udcac</span>\n      <span v-else>\u2715</span>\n    </button>\n\n    <div class=\"chat-window\" v-if=\"isOpen\">\n      <div class=\"chat-header\">\n        <span>\ud83e\udd16 Tr\u1ee3 l\u00fd AI</span>\n        <button class=\"close-btn\" @click=\"toggleChat\">\u2715</button>\n      </div>\n\n      <div class=\"chat-body\" ref=\"chatBody\">\n        <div v-for=\"(m, i) in messages\" :key=\"i\" :class=\"['chat-msg', m.role]\">\n          <div class=\"bubble\">{{ m.text }}</div>\n        </div>\n\n        <div v-if=\"isTyping\" class=\"chat-msg bot\">\n          <div class=\"bubble typing\">\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"chat-footer\">\n        <input\n          v-model=\"inputText\"\n          @keyup.enter=\"sendMessage\"\n          placeholder=\"Nh\u1eadp tin nh\u1eafn...\"\n          :disabled=\"isTyping\"\n        />\n        <button @click=\"sendMessage\" :disabled=\"isTyping || !inputText.trim()\">\u27a4</button>\n      </div>\n    </div>\n  </div>\n\n  <div\n    style=\"position:fixed; top:0; left:0; background:yellow; z-index:99999; font-size:10px; max-width:300px; word-break:break-all;\">\n    DEBUG msg: {{ msg }}\n  </div>\n</template>\n\n<script>\n  export default {\n  data() {\n    return {\n      isOpen: false,\n      inputText: '',\n      isTyping: false,\n      messages: []\n    }\n  },\n\n  mounted() {\n    this.$socket.on('msg-input:' + this.id, (msg) => {\n      if (msg?.payload === undefined || msg.payload === null) return\n\n      const text = typeof msg.payload === 'string'\n        ? msg.payload\n        : JSON.stringify(msg.payload)\n\n      this.isTyping = false\n      this.messages.push({ role: 'bot', text })\n      this.$nextTick(() => this.scrollToBottom())\n    })\n  },\n\n  methods: {\n    toggleChat() {\n      this.isOpen = !this.isOpen\n      if (this.isOpen) this.$nextTick(() => this.scrollToBottom())\n    },\n\n    sendMessage() {\n      const text = this.inputText.trim()\n      if (!text || this.isTyping) return\n\n      this.messages.push({ role: 'user', text })\n      this.inputText = ''\n      this.isTyping = true\n      this.$nextTick(() => this.scrollToBottom())\n\n      this.send({ payload: text })\n    },\n\n    scrollToBottom() {\n      const el = this.$refs.chatBody\n      if (el) el.scrollTop = el.scrollHeight\n    }\n  }\n}\n</script>\n\n<style scoped>\n  .chat-widget {\n    position: fixed;\n    bottom: 20px;\n    right: 20px;\n    z-index: 9999;\n    font-family: Arial, sans-serif;\n  }\n\n  .chat-toggle-btn {\n    width: 56px;\n    height: 56px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    font-size: 24px;\n    cursor: pointer;\n    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);\n  }\n\n  .chat-window {\n    position: absolute;\n    bottom: 70px;\n    right: 0;\n    width: 320px;\n    height: 420px;\n    background: #fff;\n    border-radius: 10px;\n    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n  }\n\n  .chat-header {\n    background: #2b7de9;\n    color: #fff;\n    padding: 10px 12px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    font-weight: bold;\n  }\n\n  .close-btn {\n    background: none;\n    border: none;\n    color: #fff;\n    cursor: pointer;\n    font-size: 16px;\n  }\n\n  .chat-body {\n    flex: 1;\n    padding: 10px;\n    overflow-y: auto;\n    background: #f4f6f8;\n  }\n\n  .chat-msg {\n    display: flex;\n    margin-bottom: 8px;\n  }\n\n  .chat-msg.user {\n    justify-content: flex-end;\n  }\n\n  .chat-msg.bot {\n    justify-content: flex-start;\n  }\n\n  .bubble {\n    max-width: 75%;\n    padding: 8px 12px;\n    border-radius: 14px;\n    font-size: 14px;\n    line-height: 1.4;\n    word-wrap: break-word;\n  }\n\n  .chat-msg.user .bubble {\n    background: #2b7de9;\n    color: #fff;\n    border-bottom-right-radius: 2px;\n  }\n\n  .chat-msg.bot .bubble {\n    background: #e4e6eb;\n    color: #000;\n    border-bottom-left-radius: 2px;\n  }\n\n  .typing {\n    display: flex;\n    gap: 4px;\n    align-items: center;\n  }\n\n  .dot {\n    width: 6px;\n    height: 6px;\n    border-radius: 50%;\n    background: #888;\n    animation: blink 1.4s infinite both;\n  }\n\n  .dot:nth-child(2) {\n    animation-delay: 0.2s;\n  }\n\n  .dot:nth-child(3) {\n    animation-delay: 0.4s;\n  }\n\n  @keyframes blink {\n\n    0%,\n    80%,\n    100% {\n      opacity: 0.2;\n    }\n\n    40% {\n      opacity: 1;\n    }\n  }\n\n  .chat-footer {\n    display: flex;\n    padding: 8px;\n    border-top: 1px solid #ddd;\n    background: #fff;\n  }\n\n  .chat-footer input {\n    flex: 1;\n    border: 1px solid #ccc;\n    border-radius: 20px;\n    padding: 8px 12px;\n    outline: none;\n    font-size: 14px;\n  }\n\n  .chat-footer button {\n    margin-left: 6px;\n    width: 36px;\n    height: 36px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    cursor: pointer;\n  }\n\n  .chat-footer button:disabled {\n    background: #aac4ea;\n    cursor: not-allowed;\n  }\n</style>",
     "storeOutMessages": true,
     "passthru": false,
     "resendOnRefresh": true,
@@ -875,7 +872,7 @@
         "vt": "str"
       }
     ],
-    "repeat": "1",
+    "repeat": "30",
     "crontab": "",
     "once": true,
     "onceDelay": 0.1,
@@ -898,7 +895,7 @@
     "method": "GET",
     "ret": "obj",
     "paytoqs": "ignore",
-    "url": "https://wfkesifcfgajgymipqcd.supabase.co/rest/v1/environment_log?select=temperature,humidity,recorded_at&order=recorded_at.asc&limit=24",
+    "url": "https://wfkesifcfgajgymipqcd.supabase.co/rest/v1/environment_log?select=temperature,humidity,recorded_at&order=recorded_at.desc&limit=24",
     "tls": "",
     "persist": false,
     "proxy": "",
@@ -942,7 +939,7 @@
     "type": "function",
     "z": "a25cc6e926258f9f",
     "name": "function 5",
-    "func": "const rows = msg.payload;\n\nif (!Array.isArray(rows)) {\n    node.error(\"Supabase không trả về mảng dữ liệu\", msg);\n    return null;\n}\n\nconst points = rows.map(row => ({\n    time: new Date(row.recorded_at).getTime(),\n    label: new Date(row.recorded_at).toLocaleTimeString(\"vi-VN\", {\n        hour: \"2-digit\",\n        minute: \"2-digit\"\n    }),\n    temperature: Number(row.temperature),\n    humidity: Number(row.humidity)\n}));\n\nconst temperatureStyle = {\n    ui_update: {\n        chartOptions: {\n            color: [\"#F44336\"],\n            textStyle: {\n                color: \"#000000ff\"\n            },\n            title: {\n                textStyle: {\n                    color: \"#000000ff\"\n                }\n            },\n            legend: {\n                textStyle: {\n                    color: \"#000000ff\"\n                }\n            },\n            xAxis: {\n                axisLabel: { color: \"#000000ff\" },\n                nameTextStyle: { color: \"#000000ff\" }\n            },\n            yAxis: {\n                axisLabel: { color: \"#000000ff\" },\n                nameTextStyle: { color: \"#000000ff\" }\n            },\n            series: [{\n                name: \"Temperature (°C)\",\n                type: \"line\",\n                lineStyle: { color: \"#F44336\" },\n                itemStyle: { color: \"#F44336\" }\n            }]\n        }\n    }\n};\n\nconst humidityStyle = {\n    ui_update: {\n        chartOptions: {\n            color: [\"#2196F3\"],\n            textStyle: { color: \"#000000\" },\n            title: {\n                textStyle: { color: \"#000000\" }\n            },\n            legend: {\n                textStyle: { color: \"#000000ff\" }\n            },\n            xAxis: {\n                axisLabel: { color: \"#000000\" },\n                nameTextStyle: { color: \"#000000\" }\n            },\n            yAxis: {\n                axisLabel: { color: \"#000000\" },\n                nameTextStyle: { color: \"#000000\" }\n            },\n            series: [{\n                name: \"Humidity (%)\",\n                type: \"bar\",\n                itemStyle: { color: \"#2196F3\" }\n            }]\n        }\n    }\n};\n\nconst temperatureData = {\n    topic: \"Temperature (°C)\",\n    action: \"replace\",\n    payload: points\n};\n\nconst humidityData = {\n    topic: \"Humidity (%)\",\n    action: \"replace\",\n    payload: points\n};\n\nreturn [\n    [temperatureStyle, temperatureData],\n    [humidityStyle, humidityData]\n];",
+    "func": "const rows = msg.payload;\n\nif (!Array.isArray(rows)) {\n    node.error(\"Supabase kh\u00f4ng tr\u1ea3 v\u1ec1 m\u1ea3ng d\u1eef li\u1ec7u\", msg);\n    return null;\n}\n\nconst points = rows.reverse().map(row => ({\n    time: new Date(row.recorded_at).getTime(),\n    label: new Date(row.recorded_at).toLocaleTimeString(\"vi-VN\", {\n        hour: \"2-digit\",\n        minute: \"2-digit\"\n    }),\n    temperature: Number(row.temperature),\n    humidity: Number(row.humidity)\n}));\n\nconst temperatureStyle = {\n    ui_update: {\n        chartOptions: {\n            color: [\"#F44336\"],\n            textStyle: {\n                color: \"#000000ff\"\n            },\n            title: {\n                textStyle: {\n                    color: \"#000000ff\"\n                }\n            },\n            legend: {\n                textStyle: {\n                    color: \"#000000ff\"\n                }\n            },\n            xAxis: {\n                axisLabel: { color: \"#000000ff\" },\n                nameTextStyle: { color: \"#000000ff\" }\n            },\n            yAxis: {\n                axisLabel: { color: \"#000000ff\" },\n                nameTextStyle: { color: \"#000000ff\" }\n            },\n            series: [{\n                name: \"Temperature (\u00b0C)\",\n                type: \"line\",\n                lineStyle: { color: \"#F44336\" },\n                itemStyle: { color: \"#F44336\" }\n            }]\n        }\n    }\n};\n\nconst humidityStyle = {\n    ui_update: {\n        chartOptions: {\n            color: [\"#2196F3\"],\n            textStyle: { color: \"#000000\" },\n            title: {\n                textStyle: { color: \"#000000\" }\n            },\n            legend: {\n                textStyle: { color: \"#000000ff\" }\n            },\n            xAxis: {\n                axisLabel: { color: \"#000000\" },\n                nameTextStyle: { color: \"#000000\" }\n            },\n            yAxis: {\n                axisLabel: { color: \"#000000\" },\n                nameTextStyle: { color: \"#000000\" }\n            },\n            series: [{\n                name: \"Humidity (%)\",\n                type: \"bar\",\n                itemStyle: { color: \"#2196F3\" }\n            }]\n        }\n    }\n};\n\nconst temperatureData = {\n    topic: \"Temperature (\u00b0C)\",\n    action: \"replace\",\n    payload: points\n};\n\nconst humidityData = {\n    topic: \"Humidity (%)\",\n    action: \"replace\",\n    payload: points\n};\n\nreturn [\n    [temperatureStyle, temperatureData],\n    [humidityStyle, humidityData]\n];",
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
@@ -1223,7 +1220,7 @@
     "type": "function",
     "z": "a26aa76f5d84d03a",
     "name": "function 6",
-    "func": "const { email, password } = msg.payload || {};\n\nif (!email || !password) {\n    msg.statusCode = 400;\n    msg.payload = {\n        ok: false,\n        message: \"Vui lòng nhập email và mật khẩu.\"\n    };\n    return [null, msg]; // đi thẳng tới http response\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") +\n    \"/auth/v1/token?grant_type=password\";\n\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = { email, password };\n\nreturn [msg, null]; // gửi sang http request",
+    "func": "const { email, password } = msg.payload || {};\n\nif (!email || !password) {\n    msg.statusCode = 400;\n    msg.payload = {\n        ok: false,\n        message: \"Vui l\u00f2ng nh\u1eadp email v\u00e0 m\u1eadt kh\u1ea9u.\"\n    };\n    return [null, msg]; // \u0111i th\u1eb3ng t\u1edbi http response\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") +\n    \"/auth/v1/token?grant_type=password\";\n\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = { email, password };\n\nreturn [msg, null]; // g\u1eedi sang http request",
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
@@ -1246,7 +1243,7 @@
     "type": "function",
     "z": "a26aa76f5d84d03a",
     "name": "function 7",
-    "func": "const { full_name, email, password, re_password } = msg.payload || {};\n\nif (!email || !password || !re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Vui lòng nhập đủ thông tin.\" };\n    return [null, msg];\n}\n\nif (password !== re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu nhập lại không khớp.\" };\n    return [null, msg];\n}\n\nif (password.length < 6) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Mật khẩu phải có ít nhất 6 ký tự.\" };\n    return [null, msg];\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") + \"/auth/v1/signup\";\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\nmsg.payload = {\n    email,\n    password,\n    data: { full_name }\n};\n\nreturn [msg, null];",
+    "func": "const { full_name, email, password, re_password } = msg.payload || {};\n\nif (!email || !password || !re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"Vui l\u00f2ng nh\u1eadp \u0111\u1ee7 th\u00f4ng tin.\" };\n    return [null, msg];\n}\n\nif (password !== re_password) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"M\u1eadt kh\u1ea9u nh\u1eadp l\u1ea1i kh\u00f4ng kh\u1edbp.\" };\n    return [null, msg];\n}\n\nif (password.length < 6) {\n    msg.statusCode = 400;\n    msg.payload = { ok: false, message: \"M\u1eadt kh\u1ea9u ph\u1ea3i c\u00f3 \u00edt nh\u1ea5t 6 k\u00fd t\u1ef1.\" };\n    return [null, msg];\n}\n\nmsg.method = \"POST\";\nmsg.url = env.get(\"SUPABASE_URL\") + \"/auth/v1/signup\";\nmsg.headers = {\n    \"apikey\": env.get(\"SUPABASE_ANON_KEY\"),\n    \"Content-Type\": \"application/json\"\n};\nmsg.payload = {\n    email,\n    password,\n    data: { full_name }\n};\n\nreturn [msg, null];",
     "outputs": 2,
     "timeout": 0,
     "noerr": 0,
@@ -1317,7 +1314,7 @@
     "type": "function",
     "z": "a26aa76f5d84d03a",
     "name": "function 8",
-    "func": "const result = msg.payload || {};\nconst status = Number(msg.statusCode || 500);\n\nif (status >= 200 && status < 300 && result.access_token) {\n    msg.statusCode = 200;\n    msg.payload = {\n        ok: true,\n        message: \"Đăng nhập thành công.\",\n        access_token: result.access_token,\n        refresh_token: result.refresh_token,\n        user: {\n            id: result.user.id,\n            email: result.user.email\n        }\n    };\n} else {\n    msg.statusCode = status >= 400 ? status : 401;\n    msg.payload = {\n        ok: false,\n        message: result.msg || result.message || \"Email hoặc mật khẩu không đúng.\"\n    };\n}\n\nreturn msg;",
+    "func": "const result = msg.payload || {};\nconst status = Number(msg.statusCode || 500);\n\nif (status >= 200 && status < 300 && result.access_token) {\n    msg.statusCode = 200;\n    msg.payload = {\n        ok: true,\n        message: \"\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng.\",\n        access_token: result.access_token,\n        refresh_token: result.refresh_token,\n        user: {\n            id: result.user.id,\n            email: result.user.email\n        }\n    };\n} else {\n    msg.statusCode = status >= 400 ? status : 401;\n    msg.payload = {\n        ok: false,\n        message: result.msg || result.message || \"Email ho\u1eb7c m\u1eadt kh\u1ea9u kh\u00f4ng \u0111\u00fang.\"\n    };\n}\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -1337,7 +1334,7 @@
     "type": "function",
     "z": "a26aa76f5d84d03a",
     "name": "function 9",
-    "func": "const result = msg.payload || {};\nconst status = Number(msg.statusCode || 500);\n\n// Supabase của bạn trả user trực tiếp; vẫn hỗ trợ cả dạng result.user.\nconst user = result.user || (result.id ? result : null);\n\nif (status >= 200 && status < 300 && user) {\n    msg.statusCode = 201;\n\n    msg.payload = {\n        ok: true,\n        message: result.confirmation_sent_at\n            ? \"Đăng ký thành công. Hãy kiểm tra email để xác nhận tài khoản.\"\n            : \"Đăng ký thành công. Bạn có thể đăng nhập ngay.\",\n        user: {\n            id: user.id,\n            email: user.email\n        }\n    };\n} else {\n    msg.statusCode = status >= 400 ? status : 400;\n\n    msg.payload = {\n        ok: false,\n        message:\n            result.msg ||\n            result.message ||\n            result.error_description ||\n            result.error?.message ||\n            \"Không thể đăng ký tài khoản.\"\n    };\n}\n\nreturn msg;",
+    "func": "const result = msg.payload || {};\nconst status = Number(msg.statusCode || 500);\n\n// Supabase c\u1ee7a b\u1ea1n tr\u1ea3 user tr\u1ef1c ti\u1ebfp; v\u1eabn h\u1ed7 tr\u1ee3 c\u1ea3 d\u1ea1ng result.user.\nconst user = result.user || (result.id ? result : null);\n\nif (status >= 200 && status < 300 && user) {\n    msg.statusCode = 201;\n\n    msg.payload = {\n        ok: true,\n        message: result.confirmation_sent_at\n            ? \"\u0110\u0103ng k\u00fd th\u00e0nh c\u00f4ng. H\u00e3y ki\u1ec3m tra email \u0111\u1ec3 x\u00e1c nh\u1eadn t\u00e0i kho\u1ea3n.\"\n            : \"\u0110\u0103ng k\u00fd th\u00e0nh c\u00f4ng. B\u1ea1n c\u00f3 th\u1ec3 \u0111\u0103ng nh\u1eadp ngay.\",\n        user: {\n            id: user.id,\n            email: user.email\n        }\n    };\n} else {\n    msg.statusCode = status >= 400 ? status : 400;\n\n    msg.payload = {\n        ok: false,\n        message:\n            result.msg ||\n            result.message ||\n            result.error_description ||\n            result.error?.message ||\n            \"Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd t\u00e0i kho\u1ea3n.\"\n    };\n}\n\nreturn msg;",
     "outputs": 1,
     "timeout": 0,
     "noerr": 0,
@@ -1386,7 +1383,7 @@
     "width": 0,
     "height": 0,
     "head": "",
-    "format": "<template>\n  <div class=\"auth-wrap\">\n    <div class=\"auth-card\">\n      <h1>SAFEHOME</h1>\n      <p class=\"subtitle\">\n        {{ isRegister ? 'Tạo tài khoản mới' : 'Đăng nhập để quản lý ngôi nhà của bạn' }}\n      </p>\n\n      <form @submit.prevent=\"isRegister ? register() : login()\">\n        <label>Họ và tên</label>\n        <input\n          v-if=\"isRegister\"\n          v-model.trim=\"fullName\"\n          type=\"text\"\n          placeholder=\"Nguyễn Văn A\"\n        >\n\n        <label>Email</label>\n        <input\n          v-model.trim=\"email\"\n          type=\"email\"\n          placeholder=\"email@example.com\"\n          required\n        >\n\n        <label>Mật khẩu</label>\n        <input\n          v-model=\"password\"\n          type=\"password\"\n          placeholder=\"Tối thiểu 6 ký tự\"\n          required\n        >\n\n        <template v-if=\"isRegister\">\n          <label>Nhập lại mật khẩu</label>\n          <input\n            v-model=\"rePassword\"\n            type=\"password\"\n            placeholder=\"Nhập lại mật khẩu\"\n            required\n          >\n        </template>\n\n        <p v-if=\"message\" :class=\"success ? 'success' : 'error'\">\n          {{ message }}\n        </p>\n\n        <button type=\"submit\" :disabled=\"loading\">\n          {{ loading ? 'Đang xử lý...' : (isRegister ? 'Đăng ký' : 'Đăng nhập') }}\n        </button>\n      </form>\n\n      <button class=\"link-button\" @click=\"switchForm\">\n        {{ isRegister\n          ? 'Đã có tài khoản? Đăng nhập'\n          : 'Chưa có tài khoản? Đăng ký ngay' }}\n      </button>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      isRegister: false,\n      fullName: '',\n      email: '',\n      password: '',\n      rePassword: '',\n      message: '',\n      success: false,\n      loading: false\n    }\n  },\n\n  methods: {\n    switchForm() {\n      this.isRegister = !this.isRegister\n      this.message = ''\n      this.success = false\n      this.password = ''\n      this.rePassword = ''\n    },\n\n    async login() {\n      await this.callApi('/auth/login', {\n        email: this.email,\n        password: this.password\n      }, true)\n    },\n\n    async register() {\n      if (this.password !== this.rePassword) {\n        this.success = false\n        this.message = 'Mật khẩu nhập lại không khớp.'\n        return\n      }\n\n      await this.callApi('/auth/register', {\n        full_name: this.fullName,\n        email: this.email,\n        password: this.password,\n        re_password: this.rePassword\n      }, false)\n    },\n\n    async callApi(url, body, isLogin) {\n      this.loading = true\n      this.message = ''\n\n      try {\n        const response = await fetch(url, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify(body)\n        })\n\n        const result = await response.json()\n        this.success = result.ok\n        this.message = result.message || 'Không nhận được phản hồi từ hệ thống.'\n\n        if (isLogin && result.ok && result.access_token) {\n          sessionStorage.setItem('safehome_access_token', result.access_token)\n          sessionStorage.setItem('safehome_user', JSON.stringify(result.user))\n\n          setTimeout(() => {\n            window.location.href = '/dashboard/page2'\n          }, 700)\n        }\n\n        if (!isLogin && result.ok) {\n          this.isRegister = false\n          this.password = ''\n          this.rePassword = ''\n        }\n      } catch (error) {\n        this.success = false\n        this.message = 'Không thể kết nối đến máy chủ Node-RED.'\n      } finally {\n        this.loading = false\n      }\n    }\n  }\n}\n</script>\n\n<style scoped>\n.auth-wrap {\n  min-height: 75vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 24px;\n  background: #f3f6f8;\n}\n\n.auth-card {\n  width: min(100%, 420px);\n  padding: 32px;\n  border-radius: 16px;\n  background: #ffffff;\n  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);\n}\n\nh1 {\n  margin: 0;\n  text-align: center;\n  color: #176b4a;\n  letter-spacing: 2px;\n}\n\n.subtitle {\n  margin: 10px 0 24px;\n  color: #667085;\n  text-align: center;\n}\n\nlabel {\n  display: block;\n  margin: 14px 0 6px;\n  font-weight: 600;\n  color: #344054;\n}\n\ninput {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 12px;\n  border: 1px solid #d0d5dd;\n  border-radius: 8px;\n  font-size: 15px;\n}\n\nbutton {\n  width: 100%;\n  margin-top: 22px;\n  padding: 12px;\n  border: 0;\n  border-radius: 8px;\n  background: #176b4a;\n  color: white;\n  font-size: 16px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\nbutton:disabled {\n  background: #98a2b3;\n  cursor: not-allowed;\n}\n\n.link-button {\n  margin-top: 12px;\n  background: transparent;\n  color: #176b4a;\n}\n\n.error, .success {\n  margin: 14px 0 0;\n  padding: 10px;\n  border-radius: 8px;\n}\n\n.error {\n  background: #fef3f2;\n  color: #b42318;\n}\n\n.success {\n  background: #ecfdf3;\n  color: #027a48;\n}\n</style>",
+    "format": "<template>\n  <div class=\"auth-wrap\">\n    <div class=\"auth-card\">\n      <h1>SAFEHOME</h1>\n      <p class=\"subtitle\">\n        {{ isRegister ? 'T\u1ea1o t\u00e0i kho\u1ea3n m\u1edbi' : '\u0110\u0103ng nh\u1eadp \u0111\u1ec3 qu\u1ea3n l\u00fd ng\u00f4i nh\u00e0 c\u1ee7a b\u1ea1n' }}\n      </p>\n\n      <form @submit.prevent=\"isRegister ? register() : login()\">\n        <label>H\u1ecd v\u00e0 t\u00ean</label>\n        <input\n          v-if=\"isRegister\"\n          v-model.trim=\"fullName\"\n          type=\"text\"\n          placeholder=\"Nguy\u1ec5n V\u0103n A\"\n        >\n\n        <label>Email</label>\n        <input\n          v-model.trim=\"email\"\n          type=\"email\"\n          placeholder=\"email@example.com\"\n          required\n        >\n\n        <label>M\u1eadt kh\u1ea9u</label>\n        <input\n          v-model=\"password\"\n          type=\"password\"\n          placeholder=\"T\u1ed1i thi\u1ec3u 6 k\u00fd t\u1ef1\"\n          required\n        >\n\n        <template v-if=\"isRegister\">\n          <label>Nh\u1eadp l\u1ea1i m\u1eadt kh\u1ea9u</label>\n          <input\n            v-model=\"rePassword\"\n            type=\"password\"\n            placeholder=\"Nh\u1eadp l\u1ea1i m\u1eadt kh\u1ea9u\"\n            required\n          >\n        </template>\n\n        <p v-if=\"message\" :class=\"success ? 'success' : 'error'\">\n          {{ message }}\n        </p>\n\n        <button type=\"submit\" :disabled=\"loading\">\n          {{ loading ? '\u0110ang x\u1eed l\u00fd...' : (isRegister ? '\u0110\u0103ng k\u00fd' : '\u0110\u0103ng nh\u1eadp') }}\n        </button>\n      </form>\n\n      <button class=\"link-button\" @click=\"switchForm\">\n        {{ isRegister\n          ? '\u0110\u00e3 c\u00f3 t\u00e0i kho\u1ea3n? \u0110\u0103ng nh\u1eadp'\n          : 'Ch\u01b0a c\u00f3 t\u00e0i kho\u1ea3n? \u0110\u0103ng k\u00fd ngay' }}\n      </button>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      isRegister: false,\n      fullName: '',\n      email: '',\n      password: '',\n      rePassword: '',\n      message: '',\n      success: false,\n      loading: false\n    }\n  },\n\n  methods: {\n    switchForm() {\n      this.isRegister = !this.isRegister\n      this.message = ''\n      this.success = false\n      this.password = ''\n      this.rePassword = ''\n    },\n\n    async login() {\n      await this.callApi('/auth/login', {\n        email: this.email,\n        password: this.password\n      }, true)\n    },\n\n    async register() {\n      if (this.password !== this.rePassword) {\n        this.success = false\n        this.message = 'M\u1eadt kh\u1ea9u nh\u1eadp l\u1ea1i kh\u00f4ng kh\u1edbp.'\n        return\n      }\n\n      await this.callApi('/auth/register', {\n        full_name: this.fullName,\n        email: this.email,\n        password: this.password,\n        re_password: this.rePassword\n      }, false)\n    },\n\n    async callApi(url, body, isLogin) {\n      this.loading = true\n      this.message = ''\n\n      try {\n        const response = await fetch(url, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify(body)\n        })\n\n        const result = await response.json()\n        this.success = result.ok\n        this.message = result.message || 'Kh\u00f4ng nh\u1eadn \u0111\u01b0\u1ee3c ph\u1ea3n h\u1ed3i t\u1eeb h\u1ec7 th\u1ed1ng.'\n\n        if (isLogin && result.ok && result.access_token) {\n          sessionStorage.setItem('safehome_access_token', result.access_token)\n          sessionStorage.setItem('safehome_user', JSON.stringify(result.user))\n\n          setTimeout(() => {\n            window.location.href = '/dashboard/page2'\n          }, 700)\n        }\n\n        if (!isLogin && result.ok) {\n          this.isRegister = false\n          this.password = ''\n          this.rePassword = ''\n        }\n      } catch (error) {\n        this.success = false\n        this.message = 'Kh\u00f4ng th\u1ec3 k\u1ebft n\u1ed1i \u0111\u1ebfn m\u00e1y ch\u1ee7 Node-RED.'\n      } finally {\n        this.loading = false\n      }\n    }\n  }\n}\n</script>\n\n<style scoped>\n.auth-wrap {\n  min-height: 75vh;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  padding: 24px;\n  background: #f3f6f8;\n}\n\n.auth-card {\n  width: min(100%, 420px);\n  padding: 32px;\n  border-radius: 16px;\n  background: #ffffff;\n  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);\n}\n\nh1 {\n  margin: 0;\n  text-align: center;\n  color: #176b4a;\n  letter-spacing: 2px;\n}\n\n.subtitle {\n  margin: 10px 0 24px;\n  color: #667085;\n  text-align: center;\n}\n\nlabel {\n  display: block;\n  margin: 14px 0 6px;\n  font-weight: 600;\n  color: #344054;\n}\n\ninput {\n  box-sizing: border-box;\n  width: 100%;\n  padding: 12px;\n  border: 1px solid #d0d5dd;\n  border-radius: 8px;\n  font-size: 15px;\n}\n\nbutton {\n  width: 100%;\n  margin-top: 22px;\n  padding: 12px;\n  border: 0;\n  border-radius: 8px;\n  background: #176b4a;\n  color: white;\n  font-size: 16px;\n  font-weight: 600;\n  cursor: pointer;\n}\n\nbutton:disabled {\n  background: #98a2b3;\n  cursor: not-allowed;\n}\n\n.link-button {\n  margin-top: 12px;\n  background: transparent;\n  color: #176b4a;\n}\n\n.error, .success {\n  margin: 14px 0 0;\n  padding: 10px;\n  border-radius: 8px;\n}\n\n.error {\n  background: #fef3f2;\n  color: #b42318;\n}\n\n.success {\n  background: #ecfdf3;\n  color: #027a48;\n}\n</style>",
     "storeOutMessages": true,
     "passthru": false,
     "resendOnRefresh": true,
@@ -1455,5 +1452,106 @@
     "modules": {
       "@flowfuse/node-red-dashboard": "1.30.2"
     }
+  },
+  {
+    "id": "group_smtp_config",
+    "type": "ui_group",
+    "name": "Cau hinh Email Gui",
+    "tab": "tab-email",
+    "order": 5,
+    "disp": true,
+    "width": "6",
+    "collapse": false
+  },
+  {
+    "id": "node_smtp_email",
+    "type": "ui_text_input",
+    "z": "tab-email",
+    "name": "SMTP Email",
+    "label": "Email Google cua ban",
+    "tooltip": "",
+    "group": "group_smtp_config",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": true,
+    "mode": "text",
+    "delay": 300,
+    "topic": "smtp_email",
+    "sendOnBlur": true,
+    "className": "",
+    "topicType": "str",
+    "x": 200,
+    "y": 800,
+    "wires": [
+      [
+        "node_smtp_save"
+      ]
+    ]
+  },
+  {
+    "id": "node_smtp_pass",
+    "type": "ui_text_input",
+    "z": "tab-email",
+    "name": "SMTP Password",
+    "label": "Mat khau ung dung",
+    "tooltip": "",
+    "group": "group_smtp_config",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "passthru": true,
+    "mode": "password",
+    "delay": 300,
+    "topic": "smtp_pass",
+    "sendOnBlur": true,
+    "className": "",
+    "topicType": "str",
+    "x": 200,
+    "y": 850,
+    "wires": [
+      [
+        "node_smtp_save"
+      ]
+    ]
+  },
+  {
+    "id": "node_smtp_save",
+    "type": "function",
+    "z": "tab-email",
+    "name": "Save SMTP Config",
+    "func": "if (msg.topic === 'smtp_email') {\n    flow.set('smtp_user', msg.payload);\n} else if (msg.topic === 'smtp_pass') {\n    flow.set('smtp_pass', msg.payload);\n}\nmsg.payload = 'Da luu tam thoi!';\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 820,
+    "wires": [
+      [
+        "node_smtp_toast"
+      ]
+    ]
+  },
+  {
+    "id": "node_smtp_toast",
+    "type": "ui_toast",
+    "z": "tab-email",
+    "position": "top right",
+    "displayTime": "3",
+    "highlight": "",
+    "sendall": true,
+    "outputs": 0,
+    "ok": "OK",
+    "cancel": "",
+    "raw": false,
+    "className": "",
+    "topic": "",
+    "name": "Thong bao",
+    "x": 620,
+    "y": 820,
+    "wires": []
   }
 ]
