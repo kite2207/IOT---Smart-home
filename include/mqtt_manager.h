@@ -3,4 +3,4 @@
 void setupMqtt();
 void connectMqtt();
 void mqttLoop();
-void publishMessage(const char* topic, const char* payload);
+void mqttPublish(const char* topic, const char* payload, bool retained = false);

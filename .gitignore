@@ -4,4 +4,6 @@
 .vscode/launch.json
 .vscode/ipch
 /graphify-out
+# Credentials - KHONG commit len git
 .env
+secrets.txt

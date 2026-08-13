@@ -156,7 +156,8 @@ void rfidLoop() {
     printDisplayLine(0, "[RFID] Scanned");
     printDisplayLine(1, uid);
 
-    publishMessage(RFID_SCAN_TOPIC, uid);
+    mqttPublish(RFID_SCAN_TOPIC, uid);
+    Serial.println("[RFID] Published scan to MQTT");
 
     reader.PICC_HaltA();
     reader.PCD_StopCrypto1();
