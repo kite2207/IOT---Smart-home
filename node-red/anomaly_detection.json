@@ -1,0 +1,366 @@
+[
+    {
+        "id": "06101d68bb9ed037",
+        "type": "tab",
+        "label": "anomaly_detection",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1af24ae0699ca7d7",
+        "type": "mqtt in",
+        "z": "06101d68bb9ed037",
+        "name": "",
+        "topic": "safehome/rfid/scan",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "2897adbd7c33bc7b",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 150,
+        "y": 580,
+        "wires": [
+            [
+                "a6c0cb7e02b14e5c"
+            ]
+        ]
+    },
+    {
+        "id": "a6c0cb7e02b14e5c",
+        "type": "function",
+        "z": "06101d68bb9ed037",
+        "name": "create_data_payload",
+        "func": "msg.payload = {\n    uid: msg.payload,\n    success: true,\n    access_time: new Date().toISOString()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 640,
+        "wires": [
+            [
+                "9c84e8404afd00a8"
+            ]
+        ]
+    },
+    {
+        "id": "9c84e8404afd00a8",
+        "type": "http request",
+        "z": "06101d68bb9ed037",
+        "name": "Supabase",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://wfkesifcfgajgymipqcd.supabase.co/rest/v1/access_log",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "apikey",
+                "valueType": "other",
+                "valueValue": null
+            },
+            {
+                "keyType": "other",
+                "keyValue": "Authorization",
+                "valueType": "other",
+                "valueValue": null
+            },
+            {
+                "keyType": "other",
+                "keyValue": "Content-Type",
+                "valueType": "other",
+                "valueValue": "application/json"
+            },
+            {
+                "keyType": "other",
+                "keyValue": "Prefer",
+                "valueType": "other",
+                "valueValue": "return=representation"
+            }
+        ],
+        "x": 460,
+        "y": 580,
+        "wires": [
+            [
+                "0a752dcf6959d269"
+            ]
+        ]
+    },
+    {
+        "id": "0a752dcf6959d269",
+        "type": "function",
+        "z": "06101d68bb9ed037",
+        "name": "create_predict_payload",
+        "func": "let data = msg.payload;\n\nconst log = Array.isArray(data) ? data[0] : data;\n\nmsg.payload = {\n    uid: log.uid,\n    access_time: log.access_time,\n    success: log.success,\n    unlock_method: log.unlock_method\n};\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 640,
+        "wires": [
+            [
+                "e286814507b73748"
+            ]
+        ]
+    },
+    {
+        "id": "e286814507b73748",
+        "type": "http request",
+        "z": "06101d68bb9ed037",
+        "name": "Predict",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://safehome-ai-backend.onrender.com/predict",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 760,
+        "y": 580,
+        "wires": [
+            [
+                "de2c57fab5c2addf"
+            ]
+        ]
+    },
+    {
+        "id": "de2c57fab5c2addf",
+        "type": "function",
+        "z": "06101d68bb9ed037",
+        "name": "save_lastest_anomaly",
+        "func": "let data = msg.payload;\n\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\n\nif (data.is_anomaly === true) {\n    let time = new Date().toLocaleTimeString(\"vi-VN\", {\n        hour: \"2-digit\",\n        minute: \"2-digit\"\n    });\n\n    msg.payload = time;\n\n    flow.set(\"latest_anomaly\", msg.payload);\n\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 480,
+        "wires": [
+            [
+                "cf95e938bbddea91"
+            ]
+        ]
+    },
+    {
+        "id": "cf95e938bbddea91",
+        "type": "ui-text",
+        "z": "06101d68bb9ed037",
+        "group": "d999546194a8c96d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Lastest Anomaly",
+        "label": "Lastest Anomaly: ",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 980,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "8a49d4469134718f",
+        "type": "function",
+        "z": "06101d68bb9ed037",
+        "name": "test_anomaly",
+        "func": "msg.payload = {\n    \"is_anomaly\": true,\n    \"anomaly_score\": 0.91,\n    \"detectors\": {\n        \"isolation_forest\": true,\n        \"rules\": false\n    },\n    \"risk_level\": \"high\",\n    \"reasons\": [\"Test anomaly\"]\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 320,
+        "wires": [
+            [
+                "de2c57fab5c2addf"
+            ]
+        ]
+    },
+    {
+        "id": "c5b1d183f9c2732f",
+        "type": "inject",
+        "z": "06101d68bb9ed037",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 840,
+        "y": 200,
+        "wires": [
+            [
+                "8a49d4469134718f"
+            ]
+        ]
+    },
+    {
+        "id": "2897adbd7c33bc7b",
+        "type": "mqtt-broker",
+        "name": "HiveMQ_Cloud",
+        "broker": "2cdbc656a97a4c3daad987b08d8a473e.s1.eu.hivemq.cloud",
+        "port": "8883",
+        "tls": "",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "d999546194a8c96d",
+        "type": "ui-group",
+        "name": "Group 1",
+        "page": "20dd24d00637a9b4",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": true,
+        "disabled": false,
+        "groupType": "default"
+    },
+    {
+        "id": "20dd24d00637a9b4",
+        "type": "ui-page",
+        "name": "Page 1",
+        "ui": "0c1705172ed07765",
+        "path": "/page1",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "05ebec6169ca95f6",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": 0,
+                "cols": 3
+            },
+            {
+                "name": "Tablet",
+                "px": 576,
+                "cols": 6
+            },
+            {
+                "name": "Small Desktop",
+                "px": 768,
+                "cols": 9
+            },
+            {
+                "name": "Desktop",
+                "px": 1024,
+                "cols": 12
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "0c1705172ed07765",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "05ebec6169ca95f6",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "63cf7af93dcfa527",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
+    }
+]
