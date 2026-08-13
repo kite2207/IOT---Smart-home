@@ -35,7 +35,5 @@ void loop() {
         const bool detected = get_ultrasonic_status(ultrasonic_trigPin, ultrasonic_echoPin);
         publishMessage("safehome/ultrasonic", detected ? "true" : "false");
     }
-
-    rfidLoop();
     delay(10);
 }
