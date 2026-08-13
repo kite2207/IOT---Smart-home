@@ -18,7 +18,7 @@ constexpr int     SERVO_CLOSE_ANGLE = 0;   // Dong chot cua
 // DHT22/DHT11
 constexpr uint8_t DHT_PIN = 4;
 constexpr uint32_t DHT_READ_INTERVAL_MS = 2000;
-constexpr float    TEMP_THRESHOLD      = 30.0f;   // °C
+constexpr float    TEMP_THRESHOLD      = 20.0f;   // °C
 constexpr float    HUMIDITY_THRESHOLD  = 70.0f;   // %
 
 // Fan Motor (not assigned in the required pin map, so use free GPIOs)
@@ -40,8 +40,8 @@ constexpr uint8_t ULTRASONIC_ECHO_PIN = 27;
 constexpr bool DEBUG_SERIAL = true;
 
 // Wi-Fi
-const char* const WIFI_SSID = "Wokwi-GUEST";
-const char* const WIFI_PASSWORD = "";
+const char* const WIFI_SSID = "KoKoNut";
+const char* const WIFI_PASSWORD = "244466666";
 
 // MQTT
 const char* const MQTT_BROKER = "2cdbc656a97a4c3daad987b08d8a473e.s1.eu.hivemq.cloud";

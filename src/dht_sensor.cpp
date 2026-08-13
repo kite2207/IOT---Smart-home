@@ -1,5 +1,5 @@
 // dht_sensor.cpp
-// Doc cam bien DHT22 (Wokwi) / DHT11 (phan cung that) dinh ky,
+// Doc cam bien DHT11 dinh ky,
 // tu dong dieu khien quat lam mat khi vuot nguong nhiet do / do am.
 //
 // Kien truc:
@@ -21,8 +21,11 @@
 #include <freertos/task.h>
 
 namespace {
-    // Wokwi dùng wokwi-dht22 nên type là DHT22; trên phần cứng thật đổi thành DHT11
-    DHT dht(DHT_PIN, DHT22);
+#ifndef DHT_SENSOR_TYPE
+#define DHT_SENSOR_TYPE DHT11
+#endif
+
+    DHT dht(DHT_PIN, DHT_SENSOR_TYPE);
 
     SemaphoreHandle_t readingsMutex = nullptr;
     float latestTemp     = 0.0f;
@@ -46,7 +49,7 @@ namespace {
                 }
 
                 // Tu dong bat/tat quat theo nguong
-                bool shouldFanOn = (temp >= TEMP_THRESHOLD) || (hum >= HUMIDITY_THRESHOLD);
+                bool shouldFanOn = (temp >= TEMP_THRESHOLD);
                 setFan(shouldFanOn);
 
                 // Publish len MQTT (real-time, moi lan doc)
@@ -61,10 +64,10 @@ namespace {
 
                 mqttPublish(FAN_STATE_TOPIC, shouldFanOn ? "ON" : "OFF", true);
 
-                Serial.printf("[DHT] Nhiet do: %.1f C | Do am: %.1f %% | Quat: %s\n",
+                Serial.printf("[DHT][OK] Nhiet do: %.1f C | Do am: %.1f %% | Quat: %s\n",
                               temp, hum, shouldFanOn ? "BAT" : "TAT");
             } else {
-                Serial.println("[DHT] Loi doc cam bien! Kiem tra ket noi day.");
+                Serial.println("[DHT][FAIL] Khong doc duoc DHT11! Kiem tra VCC, GND, DATA va dien tro keo len.");
             }
 
             vTaskDelay(pdMS_TO_TICKS(DHT_READ_INTERVAL_MS));
@@ -89,7 +92,7 @@ void setupDht() {
         1        // Core 1
     );
 
-    Serial.println("[DHT] Da khoi tao, task dang chay tren Core 1");
+    Serial.println("[DHT] Da khoi tao DHT11, task dang chay tren Core 1");
 }
 
 float getDhtTemperature() {
