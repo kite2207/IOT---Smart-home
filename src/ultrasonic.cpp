@@ -22,5 +22,6 @@ bool get_ultrasonic_status(int trig_pin, int echo_pin)
     }
 
     const float distance_cm = duration / 58.0f;
-    return distance_cm <= 50.0f;
+    Serial.printf("[ULTRASONIC] Distance: %.1f cm\n", distance_cm);
+    return distance_cm < 11.0f;
 }
