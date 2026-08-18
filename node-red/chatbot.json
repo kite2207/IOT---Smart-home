@@ -1,197 +1,197 @@
 [
-  {
-    "id": "8d4792cf5dad1653",
-    "type": "tab",
-    "label": "Flow 2",
-    "disabled": false,
-    "info": "",
-    "env": []
-  },
-  {
-    "id": "e32fa16615b765d2",
-    "type": "function",
-    "z": "8d4792cf5dad1653",
-    "name": "function 3",
-    "func": "let userText = msg.payload;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\n            \"text\": userText\n        }]\n    }]\n};\n\nmsg.url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=GEMINI_API_KEY\";\n\nreturn msg;",
-    "outputs": 1,
-    "timeout": 0,
-    "noerr": 0,
-    "initialize": "",
-    "finalize": "",
-    "libs": [],
-    "x": 540,
-    "y": 260,
-    "wires": [
-      [
-        "395dbfde12c60772"
-      ]
-    ]
-  },
-  {
-    "id": "395dbfde12c60772",
-    "type": "http request",
-    "z": "8d4792cf5dad1653",
-    "name": "",
-    "method": "POST",
-    "ret": "obj",
-    "paytoqs": "ignore",
-    "url": "",
-    "tls": "",
-    "persist": false,
-    "proxy": "",
-    "insecureHTTPParser": false,
-    "authType": "",
-    "senderr": false,
-    "headers": [],
-    "x": 730,
-    "y": 260,
-    "wires": [
-      [
-        "1053d375fc8964e1"
-      ]
-    ]
-  },
-  {
-    "id": "1053d375fc8964e1",
-    "type": "function",
-    "z": "8d4792cf5dad1653",
-    "name": "function 4",
-    "func": "// 1. Kiểm tra msg.payload có tồn tại không trước, tránh crash khi mất mạng/timeout\nif (!msg.payload) {\n    msg.payload = \"Hệ thống AI đang gặp sự cố: không nhận được phản hồi.\";\n    return msg;\n}\n\n// 2. Bắt riêng lỗi 429 (Quá tải giới hạn API của Google)\nif (msg.statusCode == 429 || (msg.payload && msg.payload.error && msg.payload.error.code == 429)) {\n    msg.payload = \"Trợ lý đang bận xử lý do hệ thống quá tải, vui lòng thử lại sau 1 phút nhé.\";\n    return msg;\n}\n\n// 3. Trích xuất dữ liệu thành công nếu cấu trúc trả về đúng chuẩn của Gemini\nif (msg.payload.candidates && msg.payload.candidates.length > 0) {\n    msg.payload = msg.payload.candidates[0].content.parts[0].text;\n} else {\n    // 4. Bắt các lỗi API khác từ Google (VD: 400 sai định dạng, 403 sai key, 404 sai model...)\n    let errorDetail = msg.payload.error ? msg.payload.error.message : \"Lỗi không xác định\";\n    msg.payload = \"Hệ thống AI đang gặp sự cố: \" + errorDetail;\n}\n\nreturn msg;",
-    "outputs": 1,
-    "timeout": 0,
-    "noerr": 0,
-    "initialize": "",
-    "finalize": "",
-    "libs": [],
-    "x": 920,
-    "y": 260,
-    "wires": [
-      [
-        "45d7e44ed73498ab"
-      ]
-    ]
-  },
-  {
-    "id": "45d7e44ed73498ab",
-    "type": "ui-template",
-    "z": "8d4792cf5dad1653",
-    "group": "802dbdbb1171fb0f",
-    "page": "",
-    "ui": "",
-    "name": "",
-    "order": 1,
-    "width": 0,
-    "height": 0,
-    "head": "",
-    "format": "<template>\n  <div class=\"chat-widget\">\n    <button class=\"chat-toggle-btn\" @click=\"toggleChat\">\n      <span v-if=\"!isOpen\">💬</span>\n      <span v-else>✕</span>\n    </button>\n\n    <div class=\"chat-window\" v-if=\"isOpen\">\n      <div class=\"chat-header\">\n        <span>🤖 Trợ lý AI</span>\n        <button class=\"close-btn\" @click=\"toggleChat\">✕</button>\n      </div>\n\n      <div class=\"chat-body\" ref=\"chatBody\">\n        <div v-for=\"(m, i) in messages\" :key=\"i\" :class=\"['chat-msg', m.role]\">\n          <div class=\"bubble\">{{ m.text }}</div>\n        </div>\n\n        <div v-if=\"isTyping\" class=\"chat-msg bot\">\n          <div class=\"bubble typing\">\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"chat-footer\">\n        <input\n          v-model=\"inputText\"\n          @keyup.enter=\"sendMessage\"\n          placeholder=\"Nhập tin nhắn...\"\n          :disabled=\"isTyping\"\n        />\n        <button @click=\"sendMessage\" :disabled=\"isTyping || !inputText.trim()\">➤</button>\n      </div>\n    </div>\n  </div>\n\n  <div\n    style=\"position:fixed; top:0; left:0; background:yellow; z-index:99999; font-size:10px; max-width:300px; word-break:break-all;\">\n    DEBUG msg: {{ msg }}\n  </div>\n</template>\n\n<script>\n  export default {\n  data() {\n    return {\n      isOpen: false,\n      inputText: '',\n      isTyping: false,\n      messages: []\n    }\n  },\n\n  mounted() {\n    this.$socket.on('msg-input:' + this.id, (msg) => {\n      if (msg?.payload === undefined || msg.payload === null) return\n\n      const text = typeof msg.payload === 'string'\n        ? msg.payload\n        : JSON.stringify(msg.payload)\n\n      this.isTyping = false\n      this.messages.push({ role: 'bot', text })\n      this.$nextTick(() => this.scrollToBottom())\n    })\n  },\n\n  methods: {\n    toggleChat() {\n      this.isOpen = !this.isOpen\n      if (this.isOpen) this.$nextTick(() => this.scrollToBottom())\n    },\n\n    sendMessage() {\n      const text = this.inputText.trim()\n      if (!text || this.isTyping) return\n\n      this.messages.push({ role: 'user', text })\n      this.inputText = ''\n      this.isTyping = true\n      this.$nextTick(() => this.scrollToBottom())\n\n      this.send({ payload: text })\n    },\n\n    scrollToBottom() {\n      const el = this.$refs.chatBody\n      if (el) el.scrollTop = el.scrollHeight\n    }\n  }\n}\n</script>\n\n<style scoped>\n  .chat-widget {\n    position: fixed;\n    bottom: 20px;\n    right: 20px;\n    z-index: 9999;\n    font-family: Arial, sans-serif;\n  }\n\n  .chat-toggle-btn {\n    width: 56px;\n    height: 56px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    font-size: 24px;\n    cursor: pointer;\n    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);\n  }\n\n  .chat-window {\n    position: absolute;\n    bottom: 70px;\n    right: 0;\n    width: 320px;\n    height: 420px;\n    background: #fff;\n    border-radius: 10px;\n    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n  }\n\n  .chat-header {\n    background: #2b7de9;\n    color: #fff;\n    padding: 10px 12px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    font-weight: bold;\n  }\n\n  .close-btn {\n    background: none;\n    border: none;\n    color: #fff;\n    cursor: pointer;\n    font-size: 16px;\n  }\n\n  .chat-body {\n    flex: 1;\n    padding: 10px;\n    overflow-y: auto;\n    background: #f4f6f8;\n  }\n\n  .chat-msg {\n    display: flex;\n    margin-bottom: 8px;\n  }\n\n  .chat-msg.user {\n    justify-content: flex-end;\n  }\n\n  .chat-msg.bot {\n    justify-content: flex-start;\n  }\n\n  .bubble {\n    max-width: 75%;\n    padding: 8px 12px;\n    border-radius: 14px;\n    font-size: 14px;\n    line-height: 1.4;\n    word-wrap: break-word;\n  }\n\n  .chat-msg.user .bubble {\n    background: #2b7de9;\n    color: #fff;\n    border-bottom-right-radius: 2px;\n  }\n\n  .chat-msg.bot .bubble {\n    background: #e4e6eb;\n    color: #000;\n    border-bottom-left-radius: 2px;\n  }\n\n  .typing {\n    display: flex;\n    gap: 4px;\n    align-items: center;\n  }\n\n  .dot {\n    width: 6px;\n    height: 6px;\n    border-radius: 50%;\n    background: #888;\n    animation: blink 1.4s infinite both;\n  }\n\n  .dot:nth-child(2) {\n    animation-delay: 0.2s;\n  }\n\n  .dot:nth-child(3) {\n    animation-delay: 0.4s;\n  }\n\n  @keyframes blink {\n\n    0%,\n    80%,\n    100% {\n      opacity: 0.2;\n    }\n\n    40% {\n      opacity: 1;\n    }\n  }\n\n  .chat-footer {\n    display: flex;\n    padding: 8px;\n    border-top: 1px solid #ddd;\n    background: #fff;\n  }\n\n  .chat-footer input {\n    flex: 1;\n    border: 1px solid #ccc;\n    border-radius: 20px;\n    padding: 8px 12px;\n    outline: none;\n    font-size: 14px;\n  }\n\n  .chat-footer button {\n    margin-left: 6px;\n    width: 36px;\n    height: 36px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    cursor: pointer;\n  }\n\n  .chat-footer button:disabled {\n    background: #aac4ea;\n    cursor: not-allowed;\n  }\n</style>",
-    "storeOutMessages": true,
-    "passthru": false,
-    "resendOnRefresh": true,
-    "templateScope": "local",
-    "className": "",
-    "x": 380,
-    "y": 260,
-    "wires": [
-      [
-        "e32fa16615b765d2"
-      ]
-    ]
-  },
-  {
-    "id": "802dbdbb1171fb0f",
-    "type": "ui-group",
-    "name": "Chatbot",
-    "page": "4c68826e1ed2155e",
-    "width": 6,
-    "height": 1,
-    "order": 1,
-    "showTitle": true,
-    "className": "",
-    "visible": "true",
-    "disabled": "false",
-    "groupType": "default"
-  },
-  {
-    "id": "4c68826e1ed2155e",
-    "type": "ui-page",
-    "name": "2",
-    "ui": "c1fa52fe677cc1d1",
-    "path": "/page3",
-    "icon": "home",
-    "layout": "grid",
-    "theme": "f159aa0cf13dfb1f",
-    "breakpoints": [
-      {
-        "name": "Default",
-        "px": "0",
-        "cols": "3"
-      },
-      {
-        "name": "Tablet",
-        "px": "576",
-        "cols": "6"
-      },
-      {
-        "name": "Small Desktop",
-        "px": "768",
-        "cols": "9"
-      },
-      {
-        "name": "Desktop",
-        "px": "1024",
-        "cols": "12"
-      }
-    ],
-    "order": 1,
-    "className": "",
-    "visible": "true",
-    "disabled": "false"
-  },
-  {
-    "id": "c1fa52fe677cc1d1",
-    "type": "ui-base",
-    "name": "My Dashboard",
-    "path": "/dashboard",
-    "appIcon": "",
-    "includeClientData": true,
-    "acceptsClientConfig": [
-      "ui-notification",
-      "ui-control"
-    ],
-    "showPathInSidebar": false,
-    "headerContent": "page",
-    "navigationStyle": "default",
-    "titleBarStyle": "default",
-    "showReconnectNotification": true,
-    "notificationDisplayTime": 1,
-    "showDisconnectNotification": true,
-    "allowInstall": false
-  },
-  {
-    "id": "f159aa0cf13dfb1f",
-    "type": "ui-theme",
-    "name": "Default Theme",
-    "colors": {
-      "surface": "#ffffff",
-      "primary": "#0094CE",
-      "bgPage": "#eeeeee",
-      "groupBg": "#ffffff",
-      "groupOutline": "#cccccc"
+    {
+        "id": "8d4792cf5dad1653",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
     },
-    "sizes": {
-      "density": "default",
-      "pagePadding": "12px",
-      "groupGap": "12px",
-      "groupBorderRadius": "4px",
-      "widgetGap": "12px"
+    {
+        "id": "e32fa16615b765d2",
+        "type": "function",
+        "z": "8d4792cf5dad1653",
+        "name": "function 3",
+        "func": "let userText = msg.payload;\n\nmsg.headers = {\n    \"Content-Type\": \"application/json\"\n};\n\nmsg.payload = {\n    \"contents\": [{\n        \"parts\": [{\n            \"text\": userText\n        }]\n    }]\n};\n\nmsg.url = \"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=GEMINI_API_KEY\";\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 260,
+        "wires": [
+            [
+                "395dbfde12c60772"
+            ]
+        ]
+    },
+    {
+        "id": "395dbfde12c60772",
+        "type": "http request",
+        "z": "8d4792cf5dad1653",
+        "name": "",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 730,
+        "y": 260,
+        "wires": [
+            [
+                "1053d375fc8964e1"
+            ]
+        ]
+    },
+    {
+        "id": "1053d375fc8964e1",
+        "type": "function",
+        "z": "8d4792cf5dad1653",
+        "name": "function 4",
+        "func": "// 1. Kiểm tra msg.payload có tồn tại không trước, tránh crash khi mất mạng/timeout\nif (!msg.payload) {\n    msg.payload = \"Hệ thống AI đang gặp sự cố: không nhận được phản hồi.\";\n    return msg;\n}\n\n// 2. Bắt riêng lỗi 429 (Quá tải giới hạn API của Google)\nif (msg.statusCode == 429 || (msg.payload && msg.payload.error && msg.payload.error.code == 429)) {\n    msg.payload = \"Trợ lý đang bận xử lý do hệ thống quá tải, vui lòng thử lại sau 1 phút nhé.\";\n    return msg;\n}\n\n// 3. Trích xuất dữ liệu thành công nếu cấu trúc trả về đúng chuẩn của Gemini\nif (msg.payload.candidates && msg.payload.candidates.length > 0) {\n    msg.payload = msg.payload.candidates[0].content.parts[0].text;\n} else {\n    // 4. Bắt các lỗi API khác từ Google (VD: 400 sai định dạng, 403 sai key, 404 sai model...)\n    let errorDetail = msg.payload.error ? msg.payload.error.message : \"Lỗi không xác định\";\n    msg.payload = \"Hệ thống AI đang gặp sự cố: \" + errorDetail;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 260,
+        "wires": [
+            [
+                "45d7e44ed73498ab"
+            ]
+        ]
+    },
+    {
+        "id": "45d7e44ed73498ab",
+        "type": "ui-template",
+        "z": "8d4792cf5dad1653",
+        "group": "802dbdbb1171fb0f",
+        "page": "",
+        "ui": "",
+        "name": "",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div class=\"chat-widget\">\n    <button class=\"chat-toggle-btn\" @click=\"toggleChat\">\n      <span v-if=\"!isOpen\">💬</span>\n      <span v-else>✕</span>\n    </button>\n\n    <div class=\"chat-window\" v-if=\"isOpen\">\n      <div class=\"chat-header\">\n        <span>🤖 Trợ lý AI</span>\n        <button class=\"close-btn\" @click=\"toggleChat\">✕</button>\n      </div>\n\n      <div class=\"chat-body\" ref=\"chatBody\">\n        <div v-for=\"(m, i) in messages\" :key=\"i\" :class=\"['chat-msg', m.role]\">\n          <div class=\"bubble\">{{ m.text }}</div>\n        </div>\n\n        <div v-if=\"isTyping\" class=\"chat-msg bot\">\n          <div class=\"bubble typing\">\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n            <span class=\"dot\"></span>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"chat-footer\">\n        <input\n          v-model=\"inputText\"\n          @keyup.enter=\"sendMessage\"\n          placeholder=\"Nhập tin nhắn...\"\n          :disabled=\"isTyping\"\n        />\n        <button @click=\"sendMessage\" :disabled=\"isTyping || !inputText.trim()\">➤</button>\n      </div>\n    </div>\n  </div>\n\n  <div\n    style=\"position:fixed; top:0; left:0; background:yellow; z-index:99999; font-size:10px; max-width:300px; word-break:break-all;\">\n    DEBUG msg: {{ msg }}\n  </div>\n</template>\n\n<script>\n  export default {\n  data() {\n    return {\n      isOpen: false,\n      inputText: '',\n      isTyping: false,\n      messages: []\n    }\n  },\n\n  mounted() {\n    this.$socket.on('msg-input:' + this.id, (msg) => {\n      if (msg?.payload === undefined || msg.payload === null) return\n\n      const text = typeof msg.payload === 'string'\n        ? msg.payload\n        : JSON.stringify(msg.payload)\n\n      this.isTyping = false\n      this.messages.push({ role: 'bot', text })\n      this.$nextTick(() => this.scrollToBottom())\n    })\n  },\n\n  methods: {\n    toggleChat() {\n      this.isOpen = !this.isOpen\n      if (this.isOpen) this.$nextTick(() => this.scrollToBottom())\n    },\n\n    sendMessage() {\n      const text = this.inputText.trim()\n      if (!text || this.isTyping) return\n\n      this.messages.push({ role: 'user', text })\n      this.inputText = ''\n      this.isTyping = true\n      this.$nextTick(() => this.scrollToBottom())\n\n      this.send({ payload: text })\n    },\n\n    scrollToBottom() {\n      const el = this.$refs.chatBody\n      if (el) el.scrollTop = el.scrollHeight\n    }\n  }\n}\n</script>\n\n<style scoped>\n  .chat-widget {\n    position: fixed;\n    bottom: 20px;\n    right: 20px;\n    z-index: 9999;\n    font-family: Arial, sans-serif;\n  }\n\n  .chat-toggle-btn {\n    width: 56px;\n    height: 56px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    font-size: 24px;\n    cursor: pointer;\n    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);\n  }\n\n  .chat-window {\n    position: absolute;\n    bottom: 70px;\n    right: 0;\n    width: 320px;\n    height: 420px;\n    background: #fff;\n    border-radius: 10px;\n    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);\n    display: flex;\n    flex-direction: column;\n    overflow: hidden;\n  }\n\n  .chat-header {\n    background: #2b7de9;\n    color: #fff;\n    padding: 10px 12px;\n    display: flex;\n    justify-content: space-between;\n    align-items: center;\n    font-weight: bold;\n  }\n\n  .close-btn {\n    background: none;\n    border: none;\n    color: #fff;\n    cursor: pointer;\n    font-size: 16px;\n  }\n\n  .chat-body {\n    flex: 1;\n    padding: 10px;\n    overflow-y: auto;\n    background: #f4f6f8;\n  }\n\n  .chat-msg {\n    display: flex;\n    margin-bottom: 8px;\n  }\n\n  .chat-msg.user {\n    justify-content: flex-end;\n  }\n\n  .chat-msg.bot {\n    justify-content: flex-start;\n  }\n\n  .bubble {\n    max-width: 75%;\n    padding: 8px 12px;\n    border-radius: 14px;\n    font-size: 14px;\n    line-height: 1.4;\n    word-wrap: break-word;\n  }\n\n  .chat-msg.user .bubble {\n    background: #2b7de9;\n    color: #fff;\n    border-bottom-right-radius: 2px;\n  }\n\n  .chat-msg.bot .bubble {\n    background: #e4e6eb;\n    color: #000;\n    border-bottom-left-radius: 2px;\n  }\n\n  .typing {\n    display: flex;\n    gap: 4px;\n    align-items: center;\n  }\n\n  .dot {\n    width: 6px;\n    height: 6px;\n    border-radius: 50%;\n    background: #888;\n    animation: blink 1.4s infinite both;\n  }\n\n  .dot:nth-child(2) {\n    animation-delay: 0.2s;\n  }\n\n  .dot:nth-child(3) {\n    animation-delay: 0.4s;\n  }\n\n  @keyframes blink {\n\n    0%,\n    80%,\n    100% {\n      opacity: 0.2;\n    }\n\n    40% {\n      opacity: 1;\n    }\n  }\n\n  .chat-footer {\n    display: flex;\n    padding: 8px;\n    border-top: 1px solid #ddd;\n    background: #fff;\n  }\n\n  .chat-footer input {\n    flex: 1;\n    border: 1px solid #ccc;\n    border-radius: 20px;\n    padding: 8px 12px;\n    outline: none;\n    font-size: 14px;\n  }\n\n  .chat-footer button {\n    margin-left: 6px;\n    width: 36px;\n    height: 36px;\n    border-radius: 50%;\n    border: none;\n    background: #2b7de9;\n    color: #fff;\n    cursor: pointer;\n  }\n\n  .chat-footer button:disabled {\n    background: #aac4ea;\n    cursor: not-allowed;\n  }\n</style>",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 380,
+        "y": 260,
+        "wires": [
+            [
+                "e32fa16615b765d2"
+            ]
+        ]
+    },
+    {
+        "id": "802dbdbb1171fb0f",
+        "type": "ui-group",
+        "name": "Chatbot",
+        "page": "4c68826e1ed2155e",
+        "width": 6,
+        "height": 1,
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false",
+        "groupType": "default"
+    },
+    {
+        "id": "4c68826e1ed2155e",
+        "type": "ui-page",
+        "name": "2",
+        "ui": "c1fa52fe677cc1d1",
+        "path": "/page3",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "f159aa0cf13dfb1f",
+        "breakpoints": [
+            {
+                "name": "Default",
+                "px": "0",
+                "cols": "3"
+            },
+            {
+                "name": "Tablet",
+                "px": "576",
+                "cols": "6"
+            },
+            {
+                "name": "Small Desktop",
+                "px": "768",
+                "cols": "9"
+            },
+            {
+                "name": "Desktop",
+                "px": "1024",
+                "cols": "12"
+            }
+        ],
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "c1fa52fe677cc1d1",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "appIcon": "",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "headerContent": "page",
+        "navigationStyle": "default",
+        "titleBarStyle": "default",
+        "showReconnectNotification": true,
+        "notificationDisplayTime": 1,
+        "showDisconnectNotification": true,
+        "allowInstall": false
+    },
+    {
+        "id": "f159aa0cf13dfb1f",
+        "type": "ui-theme",
+        "name": "Default Theme",
+        "colors": {
+            "surface": "#ffffff",
+            "primary": "#0094CE",
+            "bgPage": "#eeeeee",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "density": "default",
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    },
+    {
+        "id": "934b907f9a8d4dd5",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@flowfuse/node-red-dashboard": "1.30.2"
+        }
     }
-  },
-  {
-    "id": "934b907f9a8d4dd5",
-    "type": "global-config",
-    "env": [],
-    "modules": {
-      "@flowfuse/node-red-dashboard": "1.30.2"
-    }
-  }
 ]
